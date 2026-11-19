@@ -5,6 +5,8 @@ const state = {
   expandedDay: null,
   countdownTimer: null,
   purchasedTickets: new Set(),
+  foodStatuses: {},
+  editingTodoId: null,
   todos: []
 };
 
@@ -484,7 +486,9 @@ function dayCard(day) {
         <span class="day-chevron" aria-hidden="true">+</span>
       </button>
       <div class="day-detail" id="day-detail-${day.day}" ${expanded ? "" : "hidden"}>
+        ${(state.data.preTrip?.dailyReminders?.[day.date] || []).length ? `<details class="prep-info daily-health"><summary>高原与天气提醒</summary><ul>${state.data.preTrip.dailyReminders[day.date].map((text) => `<li>${escapeHtml(text)}</li>`).join("")}</ul></details>` : ""}
         <ol class="schedule">${schedule}</ol>
+        ${foodSection(day)}
         ${costs ? `<div class="costs">${costs}</div>` : ""}
         ${notes.map((note) => `<p class="detail-note">${escapeHtml(note)}</p>`).join("")}
       </div>
@@ -500,7 +504,7 @@ function navigationDestinations(item) {
     ...(item.placeId ? [item.placeId] : [])
   ])];
   if (referencedPlaceIds.length) {
-    return referencedPlaceIds.map((placeId) => state.data.places.find((place) => place.id === placeId)).filter(Boolean).map((place) => ({
+    return referencedPlaceIds.map((placeId) => state.data.places.find((place) => place.id === placeId)).filter((place) => place && place.navigation?.disabled !== true).map((place) => ({
       id: place.id,
       label: place.nameZh || place.name,
       query: place.navigation?.query || place.googleMapsQuery || place.address || `${place.nameZh || place.name}${place.cityOrArea ? `, ${place.cityOrArea}` : ""}`,
@@ -525,6 +529,7 @@ function navigationDestinations(item) {
     : explicit;
 
   const catalogPlaces = state.data.places
+    .filter((place) => place.navigation?.disabled !== true)
     .filter((place) => [place.name, place.nameZh].filter(Boolean).some((name) => lowerText.includes(name.toLocaleLowerCase())))
     .map((place) => ({
       id: place.id,
@@ -564,12 +569,83 @@ function currentTripDay() {
   return state.data.days.find((day) => day.date === today)?.day || null;
 }
 
+function foodStorageKey() {
+  return `travel-plan:food:v1:${encodeURIComponent(state.data.metadata.tripId)}`;
+}
+
+function loadFoodState() {
+  state.foodStatuses = {};
+  try {
+    const raw = JSON.parse(localStorage.getItem(foodStorageKey()) || "{}");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return;
+    for (const item of state.data.foodRecommendations?.items || []) {
+      if (["want", "tried"].includes(raw[item.id])) state.foodStatuses[item.id] = raw[item.id];
+    }
+  } catch { /* An unreadable optional food preference must not block the itinerary. */ }
+}
+
+function foodButtons(item) {
+  const status = state.foodStatuses[item.id] || "";
+  return `<div class="food-status" role="group" aria-label="${escapeHtml(item.dishes)}的体验状态">
+    <button type="button" data-food-action="want" data-food-id="${escapeHtml(item.id)}" aria-pressed="${status === "want"}">想去</button>
+    <button type="button" data-food-action="tried" data-food-id="${escapeHtml(item.id)}" aria-pressed="${status === "tried"}">已体验</button>
+  </div>`;
+}
+
+function foodSection(day) {
+  const config = state.data.foodRecommendations;
+  const items = (config?.items || []).filter((item) => item.date === day.date);
+  if (!items.length) return "";
+  return `<details class="prep-info food-section"><summary>附近美食 · 可选推荐</summary>
+    <p class="prep-note">${escapeHtml(config.notice || "可选推荐，不计入实际支出。")}</p>
+    ${items.map((item) => {
+      const source = safeExternalUrl(item.sourceUrl);
+      const price = item.referencePrice;
+      const hasPrice = price && typeof price.perPerson === "number" && Number.isFinite(price.perPerson) && price.perPerson > 0;
+      return `<article class="food-item" data-food-item="${escapeHtml(item.id)}">
+        <h4>${escapeHtml(item.dishes)}</h4>
+        <p>${item.restaurant ? `候选餐厅：${escapeHtml(item.restaurant)}` : "餐厅自由选择，按当天路线就近用餐。"}</p>
+        <p>推荐理由：${escapeHtml(item.reason)}</p>
+        <p>与行程的关系：${escapeHtml(item.routeRelation)}</p>
+        ${hasPrice ? `<p>参考人均约 ${escapeHtml(price.perPerson)} 元 · ${escapeHtml(price.note)}</p>` : ""}
+        ${item.verificationNote ? `<p class="prep-note">${escapeHtml(item.verificationNote)}</p>` : ""}
+        ${item.addressVerified && item.address ? `<p>${escapeHtml(item.address)} · <a href="${escapeHtml(mapsSearch(`${item.restaurant} ${item.address}`))}" target="_blank" rel="noopener noreferrer">地图导航 ↗</a></p>` : ""}
+        ${source ? `<a class="food-source" href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">查看推荐资料 ↗</a>` : ""}
+        ${foodButtons(item)}
+      </article>`;
+    }).join("")}
+    <p class="prep-note" role="status" data-food-message>想去／已体验仅保存在本浏览器，不同设备不会自动同步；再次点击可取消。</p>
+  </details>`;
+}
+
+function changeFoodStatus(button) {
+  const id = button.dataset.foodId;
+  if (!(state.data.foodRecommendations?.items || []).some((item) => item.id === id)) return;
+  const action = button.dataset.foodAction;
+  if (!["want", "tried"].includes(action)) return;
+  const next = { ...state.foodStatuses };
+  if (next[id] === action) delete next[id]; else next[id] = action;
+  const section = button.closest(".food-section");
+  try {
+    localStorage.setItem(foodStorageKey(), JSON.stringify(next));
+    state.foodStatuses = next;
+    const group = button.closest(".food-status");
+    $$("button", group).forEach((item) => item.setAttribute("aria-pressed", String(next[id] === item.dataset.foodAction)));
+    $("[data-food-message]", section).textContent = "已保存到本浏览器；不同设备不会自动同步。";
+  } catch {
+    $("[data-food-message]", section).textContent = "保存失败，请检查浏览器存储后重试；状态未更改。";
+  }
+}
+
 function renderTimeline() {
+  loadFoodState();
   const today = currentTripDay();
   state.expandedDay = today;
   $("#day-count").textContent = `${state.data.days.length} DAYS`;
   $("#timeline").innerHTML = state.data.days.map(dayCard).join("");
   $("#timeline").onclick = (event) => {
+    const foodButton = event.target.closest("[data-food-action]");
+    if (foodButton) { changeFoodStatus(foodButton); return; }
     const ticketButton = event.target.closest("[data-ticket-open]");
     if (ticketButton) {
       openTicketDialog(ticketButton.dataset.ticketOpen, ticketButton);
@@ -628,9 +704,21 @@ function saveTicketState(ticketId, completed) {
   return saveSharedChange("tickets", { id: ticketId, completed }, completed ? "upsert" : "delete").catch(console.error);
 }
 
+function rentalIsPending(rental) {
+  return !rental || rental.status === "pending" || rental.bookingStatus === "待预订";
+}
+
+function rentalPriceText(price = {}) {
+  const value = price.payAtCounter;
+  return value !== null && value !== undefined && String(value).trim() !== "" && Number.isFinite(Number(value))
+    ? `${escapeHtml(price.currency || "")} ${Number(value).toFixed(2)}` : "待确认";
+}
+
 function rentalStatus(rental) {
+  if (rentalIsPending(rental)) return { label: "待预订", target: null, complete: false };
   const pickup = new Date(`${rental.pickup.date}T${rental.pickup.time}:00${rental.pickup.utcOffset || "+00:00"}`);
   const dropoff = new Date(`${rental.dropoff.date}T${rental.dropoff.time}:00${rental.dropoff.utcOffset || "+00:00"}`);
+  if (!Number.isFinite(pickup.getTime()) || !Number.isFinite(dropoff.getTime())) return { label: "时间待确认", target: null, complete: false };
   const now = new Date();
   if (now < pickup) return { label: "距取车", target: pickup, complete: false };
   if (now < dropoff) return { label: "距还车", target: dropoff, complete: false };
@@ -644,7 +732,18 @@ function renderRental() {
   const status = rentalStatus(rental);
   const vehicle = rental.vehicle || {};
   const price = rental.price || {};
-  $("#rental-card").innerHTML = `
+  const pending = rentalIsPending(rental);
+  $("#rental-card").innerHTML = pending ? `
+    <article class="rental-panel">
+      <div class="rental-details">
+        <div class="rental-car">${escapeHtml(rental.serviceLabel || "车辆")} · 待预订</div>
+        <p>${escapeHtml(rental.route || "路线待确认")}</p>
+        <p>${escapeHtml(rental.pickup.date)} · 建议 ${escapeHtml(rental.suggestedDepartureTime || "时间待确认")} 出发</p>
+        <p>${escapeHtml(vehicle.class || "车辆及行李空间待确认")}</p>
+        <p>服务商、车辆与司机待确认；尚未预订，不计入实际支出。</p>
+        <div class="rental-price"><span>费用</span><strong>${rentalPriceText(price)}</strong></div>
+      </div>
+    </article>` : `
     <article class="rental-panel">
       <div class="return-deadline">
         <span class="return-deadline__label">重要 · 还车截止时间</span>
@@ -673,7 +772,7 @@ function renderRental() {
             <div><b>${formatCompactDate(rental.dropoff.date)} ${escapeHtml(rental.dropoff.time)}</b><span>${escapeHtml(rental.dropoff.vehicleReturnPoint)}<br>建议 ${escapeHtml(rental.dropoff.recommendedArrivalTime)} 抵达机场区域</span></div>
           </div>
         </div>
-        <div class="rental-price"><span>柜台支付 · ${rental.rentalPeriodDays} 天</span><strong>${escapeHtml(price.currency)} ${Number(price.payAtCounter).toFixed(2)}</strong></div>
+        <div class="rental-price"><span>柜台支付 · ${rental.rentalPeriodDays} 天</span><strong>${rentalPriceText(price)}</strong></div>
       </div>
     </article>
   `;
@@ -703,6 +802,8 @@ function renderRental() {
 }
 
 function updateRentalCountdown() {
+  const status = rentalStatus(state.data.groundTransport.rentalCar);
+  if (!status.target) return;
   const dropoff = state.data.groundTransport.rentalCar.dropoff;
   const deadline = new Date(`${dropoff.date}T${dropoff.time}:00${dropoff.utcOffset}`);
   const remaining = deadline.getTime() - Date.now();
@@ -712,7 +813,6 @@ function updateRentalCountdown() {
   $(".return-deadline").classList.toggle("is-urgent", remaining <= 86400000);
   const panel = $("#rental-countdown");
   if (!panel) return;
-  const status = rentalStatus(state.data.groundTransport.rentalCar);
   $("span", panel).textContent = status.label;
   $("strong", panel).textContent = status.complete ? `请立即联系 ${state.data.groundTransport.rentalCar.company}` : countdownText(status.target);
 }
@@ -764,9 +864,27 @@ async function loadSharedState() {
     state.todos = authoredTodos.map((item, index) => ({
       id: String(item.id || `todo-initial-${index + 1}`),
       text: String(item.text || item.title || "").trim(),
+      category: item.category || "原有待办",
+      scope: item.scope || "shared",
       completed: Boolean(item.completed)
     })).filter((item) => item.text);
     await Promise.all(state.todos.map((todo) => todoAdapter.applyChange("todos", todo, "upsert")));
+  }
+  // Versioned IDs and deletion tombstones preserve edits, completion and removals on upgrade.
+  if (todoAdapter?.mode === "local") {
+    for (const revision of state.data.preTrip?.todoRevisions || []) {
+      const index = state.todos.findIndex((todo) => todo.id === revision.id);
+      const current = state.todos[index];
+      if (!current || current.deleted || !revision.previousTexts?.includes(current.text)) continue;
+      const updated = { ...current, text: revision.text };
+      await todoAdapter.applyChange("todos", updated, "upsert");
+      state.todos[index] = updated;
+    }
+    for (const item of state.data.preTrip?.additionalItems || []) {
+      if (state.todos.some((todo) => todo.id === item.id || todo.text === item.text)) continue;
+      await todoAdapter.applyChange("todos", item, "upsert");
+      state.todos.push({ ...item });
+    }
   }
 }
 
@@ -778,47 +896,101 @@ async function saveSharedChange(collection, value, op = "upsert") {
 
 function saveTodoState() { return Promise.all(state.todos.map((todo) => saveSharedChange("todos", todo))); }
 
+function todoOptions(values, selected) {
+  return values.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
+}
+
+function todoCategories() {
+  return [...new Set([...(state.data.preTrip?.categories || ["原有待办"]), ...state.todos.map((todo) => todo.category || "原有待办")])];
+}
+
+function todoRow(todo) {
+  const editing = state.editingTodoId === todo.id;
+  return `<div class="todo-item${todo.completed ? " is-complete" : ""}" data-todo-id="${escapeHtml(todo.id)}">
+    ${editing ? `<div class="todo-editor">
+      <input class="prep-input" name="text" aria-label="编辑物品名称" maxlength="120" value="${escapeHtml(todo.text)}">
+      <select name="category" aria-label="编辑类别">${todoOptions(todoCategories().map((c) => [c,c]), todo.category || "原有待办")}</select>
+      <select name="scope" aria-label="编辑归属">${todoOptions([["personal","个人物品（每人准备）"],["shared","六人共同"]], todo.scope || "shared")}</select>
+      <button type="button" data-prep-action="save">保存</button><button type="button" data-prep-action="cancel">取消</button>
+    </div>` : `<label><input type="checkbox" ${todo.completed ? "checked" : ""} aria-label="完成：${escapeHtml(todo.text)}"><span class="todo-check" aria-hidden="true">✓</span><span class="todo-text">${escapeHtml(todo.text)} <small class="prep-scope">${todo.scope === "personal" ? "个人 · 每人准备" : "六人共同"}</small></span></label>
+    <div class="todo-actions"><button type="button" data-prep-action="edit" aria-label="编辑：${escapeHtml(todo.text)}">编辑</button><button type="button" class="todo-delete" data-prep-action="delete" aria-label="删除：${escapeHtml(todo.text)}">删除</button></div>`}
+  </div>`;
+}
+
 function renderTodoList() {
-  const completed = state.todos.filter((todo) => todo.completed).length;
-  $("#todo-progress").textContent = `${completed} / ${state.todos.length}`;
-  $("#todo-list").innerHTML = state.todos.length ? state.todos.map((todo) => `
-    <div class="todo-item${todo.completed ? " is-complete" : ""}" data-todo-id="${escapeHtml(todo.id)}">
-      <label>
-        <input type="checkbox" ${todo.completed ? "checked" : ""} aria-label="完成：${escapeHtml(todo.text)}">
-        <span class="todo-check" aria-hidden="true">✓</span>
-        <span class="todo-text">${escapeHtml(todo.text)}</span>
-      </label>
-      <button type="button" class="todo-delete" aria-label="删除：${escapeHtml(todo.text)}">删除</button>
-    </div>`).join("") : `<p class="todo-empty">还没有准备事项，添加第一项吧。</p>`;
+  const old = new Map($$("details[data-prep-key]", $("#todo-list")).map((node) => [node.dataset.prepKey, node.open]));
+  const todos = state.todos.filter((todo) => !todo.deleted);
+  $("#todo-progress").textContent = `${todos.filter((todo) => todo.completed).length} / ${todos.length} 项`;
+  $("#todo-list").innerHTML = todoCategories().map((category) => {
+    const items = todos.filter((todo) => (todo.category || "原有待办") === category);
+    if (!items.length) return "";
+    const pending = items.filter((todo) => !todo.completed);
+    const done = items.filter((todo) => todo.completed);
+    const note = state.data.preTrip?.categoryNotes?.[category];
+    return `<details class="prep-group" data-prep-key="${escapeHtml(category)}" ${old.get(category) !== false ? "open" : ""}>
+      <summary>${escapeHtml(category)} <small>${done.length}/${items.length}</small></summary>
+      ${note ? `<p class="prep-note">${escapeHtml(note)}</p>` : ""}
+      ${pending.map(todoRow).join("")}
+      ${done.length ? `<details class="prep-completed" data-prep-key="${escapeHtml(category + "-completed")}" ${old.get(category + "-completed") ? "open" : ""}><summary>已完成 ${done.length} 项</summary>${done.map(todoRow).join("")}</details>` : ""}
+    </details>`;
+  }).join("") || `<p class="todo-empty">还没有准备事项，添加第一项吧。</p>`;
+}
+
+async function commitTodo(todo) {
+  try {
+    await saveSharedChange("todos", todo);
+    const index = state.todos.findIndex((item) => item.id === todo.id);
+    if (index < 0) state.todos.push(todo); else state.todos[index] = todo;
+    state.editingTodoId = null;
+    $("#prep-save-status").textContent = "已保存";
+    renderTodoList();
+    return true;
+  } catch (error) {
+    console.error(error);
+    $("#prep-save-status").textContent = "保存失败，请重试。";
+    renderTodoList();
+    return false;
+  }
 }
 
 function renderTravelPrep() {
+  $("#todo-category").innerHTML = todoOptions(todoCategories().map((c) => [c,c]), "旅行杂物");
+  const guide = state.data.preTrip?.altitudeGuide;
+  $("#prep-guide").innerHTML = guide ? `<details class="prep-info"><summary>${escapeHtml(guide.title)}</summary><ul>${guide.items.map((text) => `<li>${escapeHtml(text)}</li>`).join("")}</ul></details>` : "";
   renderTodoList();
-  $("#todo-form").onsubmit = (event) => {
+  $("#todo-form").onsubmit = async (event) => {
     event.preventDefault();
     const input = $("#todo-input");
     const text = input.value.trim();
     if (!text) return;
-    state.todos.push({ id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, completed: false });
-    input.value = "";
-    saveSharedChange("todos", state.todos.at(-1)).catch(console.error);
-    renderTodoList();
+    if (state.todos.some((todo) => !todo.deleted && todo.text === text)) { $("#prep-save-status").textContent = "清单中已有同名事项。"; return; }
+    const button = $("button[type=submit]", event.currentTarget);
+    button.disabled = true;
+    if (await commitTodo({ id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, category: $("#todo-category").value, scope: $("#todo-scope").value, completed: false })) input.value = "";
+    button.disabled = false;
   };
-  $("#todo-list").onchange = (event) => {
+  $("#todo-list").onchange = async (event) => {
     const item = event.target.closest("[data-todo-id]");
     if (!item || !event.target.matches("input[type='checkbox']")) return;
     const todo = state.todos.find((entry) => entry.id === item.dataset.todoId);
-    todo.completed = event.target.checked;
-    saveSharedChange("todos", todo).catch(console.error);
-    renderTodoList();
+    event.target.disabled = true;
+    await commitTodo({ ...todo, completed: event.target.checked });
   };
-  $("#todo-list").onclick = (event) => {
-    const button = event.target.closest(".todo-delete");
+  $("#todo-list").onclick = async (event) => {
+    const button = event.target.closest("[data-prep-action]");
     if (!button) return;
-    const item = button.closest("[data-todo-id]");
-    state.todos = state.todos.filter((todo) => todo.id !== item.dataset.todoId);
-    saveSharedChange("todos", { id: item.dataset.todoId }, "delete").catch(console.error);
-    renderTodoList();
+    const row = button.closest("[data-todo-id]");
+    const todo = state.todos.find((entry) => entry.id === row.dataset.todoId);
+    const action = button.dataset.prepAction;
+    if (action === "edit") { state.editingTodoId = todo.id; renderTodoList(); $(".todo-editor input", $("#todo-list"))?.focus(); }
+    if (action === "cancel") { state.editingTodoId = null; renderTodoList(); }
+    if (action === "delete") { button.disabled = true; await commitTodo({ ...todo, deleted: true }); }
+    if (action === "save") {
+      const text = $("[name=text]", row).value.trim();
+      if (!text) return;
+      button.disabled = true;
+      await commitTodo({ ...todo, text, category: $("[name=category]", row).value, scope: $("[name=scope]", row).value });
+    }
   };
 }
 
@@ -986,7 +1158,7 @@ async function init() {
     if (moduleEnabled("driving")) renderRental();
     if (moduleEnabled("todo")) renderTravelPrep();
     if (moduleEnabled("ledger")) {
-      await window.TravelLedger?.init?.({ tripId: state.data.metadata.tripId, config: state.config });
+      await window.TravelLedger?.init?.({ tripId: state.data.metadata.tripId, config: state.config, initialTravelers: state.data.ledger?.initialTravelers, familyGroups: state.data.ledger?.familyGroups, budgetSummary: state.data.ledger?.budgetSummary });
     }
     startCountdowns();
   } catch (error) {

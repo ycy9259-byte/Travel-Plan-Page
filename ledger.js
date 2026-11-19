@@ -141,6 +141,8 @@
   let ledgerPersistenceMode = "local";
   let ledgerData = null;
   let initialized = false;
+  let familyGroups = [];
+  let budgetSummary = "";
   let activeTab = "entry";
   let editingBillId = null;
   let openDialogName = null;
@@ -263,7 +265,7 @@
       const color = isValidColor(traveler?.color)
         ? traveler.color.toUpperCase()
         : AVATAR_COLORS[index % AVATAR_COLORS.length];
-      return [{ id, name, initial: avatarInitial(name), color }];
+      return [{ id, name, initial: avatarInitial(name), color, family: String(traveler.family || "").trim().slice(0, 30) }];
     });
     const travelerIds = new Set(travelers.map((traveler) => traveler.id));
     const requestedBase = String(raw.settings?.baseCurrency || DEFAULT_SETTINGS.baseCurrency).toUpperCase();
@@ -303,7 +305,7 @@
     });
     return {
       version: STORAGE_VERSION,
-      settings: { baseCurrency, commonCurrencies, lastCurrency },
+      settings: { baseCurrency, commonCurrencies, lastCurrency, ...(raw.settings?.initialMembersInitialized ? { initialMembersInitialized: true } : {}) },
       travelers,
       bills,
       updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : fallback.updatedAt
@@ -655,6 +657,8 @@
           </div>
           ${editingBill ? `<button class="ledger-text-button" type="button" data-ledger-action="cancel-edit">取消编辑</button>` : ""}
         </div>
+        ${budgetSummary ? `<p class="ledger-field-help">${escapeHtml(budgetSummary)}</p>` : ""}
+        ${ledgerPersistenceMode === "local" ? `<p class="ledger-field-help">账单和成员仅保存在当前设备的本浏览器；不同设备及 Cloudflare／GitHub Pages 站点不会自动同步，清除站点数据会丢失本地记录。</p>` : ""}
         ${ledgerData.travelers.length ? `
           <form class="ledger-bill-form" data-ledger-form="bill" novalidate>
             <div class="ledger-amount-block">
@@ -713,6 +717,7 @@
                 <legend class="ledger-field-label">参与分账人 <small>多选</small></legend>
                 <button class="ledger-text-button" type="button" data-ledger-action="select-all-participants">全选</button>
               </div>
+              ${familyGroups.length ? `<p class="ledger-field-help">共同费用选全员，各自费用选实际承担者；家庭仅用于选择参与人，不设定两家分摊比例。</p><div>${familyGroups.map((group) => `<button class="ledger-text-button" type="button" data-ledger-action="select-family" data-ledger-family="${escapeAttribute(group)}">仅选${escapeHtml(group)}</button>`).join(" ")}</div>` : ""}
               <div class="ledger-person-grid">
                 ${ledgerData.travelers.map((traveler) => renderPersonChoice(traveler, "checkbox", "participantIds", selectedParticipants.has(traveler.id))).join("")}
               </div>
@@ -1000,13 +1005,19 @@
       </section>`;
   }
 
+  function familySelect(selected = "") {
+    if (!familyGroups.length) return "";
+    const groups = [...new Set([...familyGroups, ...(selected ? [selected] : [])])];
+    return `<select class="ledger-input" name="family" aria-label="所属家庭"><option value="">家庭待确认</option>${groups.map((group) => `<option value="${escapeAttribute(group)}" ${group === selected ? "selected" : ""}>${escapeHtml(group)}</option>`).join("")}</select>`;
+  }
+
   function renderMemberEditRow(traveler) {
     if (editingMemberId === traveler.id) {
       return `
         <form class="ledger-member-edit-row ledger-member-edit-row-is-open" data-ledger-form="member-edit" data-ledger-id="${escapeAttribute(traveler.id)}">
           ${renderAvatar(traveler)}
           <label class="ledger-visually-hidden" for="ledger-name-${escapeAttribute(traveler.id)}">成员姓名</label>
-          <input class="ledger-input" id="ledger-name-${escapeAttribute(traveler.id)}" name="name" maxlength="30" value="${escapeAttribute(traveler.name)}" required>
+          <div><input class="ledger-input" id="ledger-name-${escapeAttribute(traveler.id)}" name="name" maxlength="30" value="${escapeAttribute(traveler.name)}" required>${familySelect(traveler.family)}</div>
           <label class="ledger-color-picker" title="修改头像颜色">
             <span class="ledger-visually-hidden">头像颜色</span>
             <input type="color" name="color" value="${escapeAttribute(traveler.color)}">
@@ -1018,7 +1029,7 @@
     return `
       <div class="ledger-member-edit-row ledger-member-edit-row-static">
         ${renderAvatar(traveler)}
-        <strong>${escapeHtml(traveler.name)}</strong>
+        <strong>${escapeHtml(traveler.name)}${traveler.family ? ` · ${escapeHtml(traveler.family)}` : ""}</strong>
         <span class="ledger-member-edit-actions">
           <button class="ledger-text-button" type="button" data-ledger-action="edit-member" data-ledger-id="${escapeAttribute(traveler.id)}">编辑</button>
           <button class="ledger-icon-button ledger-danger-button" type="button" data-ledger-action="delete-member" data-ledger-id="${escapeAttribute(traveler.id)}" aria-label="删除 ${escapeAttribute(traveler.name)}">删除</button>
@@ -1047,6 +1058,7 @@
             <label class="ledger-field ledger-add-member-name">
               <span class="ledger-field-label">添加成员</span>
               <input class="ledger-input" name="name" maxlength="30" placeholder="输入姓名" autocomplete="off" required>
+              ${familySelect()}
             </label>
             <label class="ledger-color-picker" title="选择头像颜色">
               <span class="ledger-visually-hidden">头像颜色</span>
@@ -1476,6 +1488,7 @@
     const traveler = {
       id,
       name: name.slice(0, 30),
+      family: String(new FormData(form).get("family") || "").trim().slice(0, 30),
       initial: avatarInitial(name),
       color: isValidColor(color) ? color : nextAvatarColor(ledgerData.travelers)
     };
@@ -1571,6 +1584,7 @@
       const traveler = next.travelers.find((entry) => entry.id === id);
       if (!traveler) return;
       traveler.name = name.slice(0, 30);
+      if (familyGroups.length) traveler.family = String(formData.get("family") || "").trim().slice(0, 30);
       traveler.initial = avatarInitial(name);
       if (isValidColor(color)) traveler.color = color;
     }, { reason: "member-updated", message: "同行人信息已更新", afterSuccess() { editingMemberId = null; } });
@@ -1749,6 +1763,13 @@
     } else if (action === "cancel-edit") {
       editingBillId = null;
       renderApp();
+    } else if (action === "select-family") {
+      const group = button.dataset.ledgerFamily;
+      const ids = new Set(ledgerData.travelers.filter((traveler) => traveler.family === group).map((traveler) => traveler.id));
+      if (!ids.size) { setNotice("请先在成员管理中确认家庭归属。"); return; }
+      button.closest("form").querySelectorAll('input[name="participantIds"]').forEach((input) => { input.checked = ids.has(input.value); });
+      captureBillDraft();
+      syncSplitSummary();
     } else if (action === "select-all-participants") {
       const form = button.closest("form");
       const inputs = [...form.querySelectorAll('input[name="participantIds"]')];
@@ -1861,9 +1882,13 @@
     ledgerPersistenceMode = options.repository || options.adapter
       ? String(ledgerAdapter.mode || "custom")
       : persistence.mode;
+    familyGroups = [...new Set((Array.isArray(options.familyGroups) ? options.familyGroups : []).map((name) => String(name).trim().slice(0, 30)).filter(Boolean))];
+    budgetSummary = String(options.budgetSummary || "");
+    let loadSucceeded = false;
     let stored = null;
     try {
       stored = await Promise.resolve(ledgerAdapter.load({ tripId: ledgerTripId }));
+      loadSucceeded = true;
     } catch (error) {
       console.error("TravelLedger could not load data", error);
       notice = ledgerPersistenceMode === "d1"
@@ -1871,6 +1896,19 @@
         : "本地账本暂时无法读取，已打开一份空账本。";
     }
     ledgerData = normalizeData(stored);
+    // Seed members only, once, in an empty local ledger. Never import budget as bills.
+    if (loadSucceeded && ledgerPersistenceMode === "local" && Array.isArray(options.initialTravelers) && options.initialTravelers.length && !ledgerData.settings.initialMembersInitialized) {
+      const next = deepClone(ledgerData);
+      if (!(stored?.travelers?.length || stored?.bills?.length)) next.travelers = normalizeData({ travelers: options.initialTravelers }).travelers;
+      next.settings.initialMembersInitialized = true;
+      try {
+        await ledgerAdapter.save(next, { tripId: ledgerTripId });
+        ledgerData = normalizeData(next);
+      } catch (error) {
+        console.error("TravelLedger could not initialize members", error);
+        notice = "成员初始化未保存，请检查本地存储后刷新。";
+      }
+    }
     activeTab = location.hash === "#ledger-stats" ? "stats" : "entry";
     ledgerRoot.addEventListener("click", handleRootClick);
     ledgerRoot.addEventListener("input", handleRootInput);

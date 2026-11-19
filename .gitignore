@@ -11,3 +11,6 @@ source-files/
 private/
 source-facts.json
 reports/private/
+
+# Generated GitHub Pages artifact
+_site/

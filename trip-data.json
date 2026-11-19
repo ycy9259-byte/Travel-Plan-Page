@@ -4,12 +4,12 @@
   "config": {
     "schemaVersion": "1.0.0",
     "modules": {
-      "flights": false,
-      "overview": false,
-      "itinerary": false,
-      "todo": false,
-      "driving": false,
-      "ledger": false
+      "flights": true,
+      "overview": true,
+      "itinerary": true,
+      "todo": true,
+      "driving": true,
+      "ledger": true
     },
     "language": "zh-CN",
     "persistence": {
@@ -17,36 +17,791 @@
     }
   },
   "metadata": {
-    "tripId": "unconfigured",
-    "title": "旅行计划",
+    "tripId": "yunnan-spring-festival-2027-family-six",
+    "title": "2027云南春节家庭旅行",
     "language": "zh-CN",
-    "assets": {}
+    "assets": {
+      "routeMaps": [
+        "assets/maps/templates/template-10-broad-riverland.webp"
+      ]
+    }
   },
   "trip": {
-    "status": "uninitialized",
-    "startDate": null,
-    "endDate": null,
-    "dayCount": 0,
-    "nightCountAway": 0,
-    "countries": [],
-    "primaryDestinationCountries": [],
-    "citiesAndAreas": [],
-    "routeSummary": "",
-    "groupSize": null
+    "status": "draft",
+    "startDate": "2027-02-05",
+    "endDate": "2027-02-12",
+    "dayCount": 8,
+    "nightCountAway": 7,
+    "countries": [
+      {
+        "code": "CN",
+        "nameZh": "中国",
+        "nameEn": "China"
+      }
+    ],
+    "primaryDestinationCountries": [
+      "CN"
+    ],
+    "citiesAndAreas": [
+      "贵阳",
+      "昆明",
+      "丽江",
+      "香格里拉"
+    ],
+    "routeSummary": "温州 → 义乌 → 贵阳 → 昆明 → 丽江 → 香格里拉 → 昆明 → 温州",
+    "groupSize": 6,
+    "primaryDestinationName": "云南",
+    "subtitle": "两家同行 · 6人 · 自然山水、雪山、湖泊、峡谷与森林；每天1—2个主要游览区域，留出休息与用餐时间"
   },
-  "flightJourneys": [],
+  "flightJourneys": [
+    {
+      "id": "yiwu-guiyang",
+      "placeholder": true,
+      "status": "pending",
+      "confirmationStatus": "用户已确认",
+      "title": "2月5日 义乌 → 贵阳｜19:30—21:55｜用户已确认｜金额1944元（票数待核对）",
+      "date": "2027-02-05",
+      "departure": {
+        "city": "义乌",
+        "time": "19:30"
+      },
+      "arrival": {
+        "city": "贵阳",
+        "time": "21:55"
+      },
+      "price": {
+        "currency": "CNY",
+        "amount": 1944
+      },
+      "missingFields": [
+        "航空公司、航班号及机场资料待补充",
+        "具体为三人或六人票数待核对；不推算人均价格"
+      ]
+    }
+  ],
   "flights": [],
-  "accommodations": [],
+  "accommodations": [
+    {
+      "id": "hotel-guiyang",
+      "name": "海友酒店（甲秀楼青云市集店）",
+      "city": "贵阳",
+      "checkIn": "2027-02-05",
+      "checkOut": "2027-02-06",
+      "price": {
+        "currency": "CNY",
+        "amount": 451.2
+      },
+      "address": "贵州省贵阳市南明区解放路69号",
+      "status": "用户提供的住宿订单",
+      "note": "用户提供的订单金额；房型、房间数及六人入住人数待核实；订单号未提供"
+    },
+    {
+      "id": "hotel-kunming",
+      "name": "海友酒店（昆明火车站店）",
+      "city": "昆明",
+      "checkIn": "2027-02-06",
+      "checkOut": "2027-02-08",
+      "price": {
+        "currency": "CNY",
+        "amount": 1212.32
+      },
+      "address": "官渡区太和街道北京路102号",
+      "status": "用户提供的住宿订单",
+      "note": "用户提供的订单金额；房型、房间数及六人入住人数待核实；订单号未提供"
+    },
+    {
+      "id": "hotel-lijiang",
+      "name": "雪隐日照金山雪山田野度假民宿（丽江束河古镇店）",
+      "city": "丽江",
+      "checkIn": "2027-02-08",
+      "checkOut": "2027-02-10",
+      "price": {
+        "currency": "CNY",
+        "amount": 1974.38
+      },
+      "address": "丽江市束河街道文明新村23号",
+      "status": "用户提供的住宿订单",
+      "note": "用户提供的订单金额；房型、房间数及六人入住人数待核实；订单号未提供"
+    },
+    {
+      "id": "hotel-shangrila",
+      "name": "山水云涧客栈（独克宗古城大佛寺转经筒店）",
+      "city": "香格里拉",
+      "checkIn": "2027-02-10",
+      "checkOut": "2027-02-11",
+      "price": {
+        "currency": "CNY",
+        "amount": 928
+      },
+      "address": "香格里拉市独克宗古城金龙街觉廊路43号",
+      "status": "用户提供的住宿订单",
+      "note": "用户提供的订单金额；房型、房间数及六人入住人数待核实；订单号未提供"
+    },
+    {
+      "id": "hotel-kunming-south",
+      "name": "悦宿酒店（昆明南高铁站店）",
+      "city": "昆明",
+      "checkIn": "2027-02-11",
+      "checkOut": "2027-02-12",
+      "price": {
+        "currency": "CNY",
+        "amount": 504
+      },
+      "address": "昆明市呈贡区聚贤街柏枝营小区12幢1单元201室",
+      "status": "用户提供的住宿订单",
+      "note": "用户提供的订单金额；房型、房间数及六人入住人数待核实；订单号未提供"
+    }
+  ],
   "groundTransport": {
-    "rentalCar": null,
-    "rentalChecklist": [],
+    "rentalCar": {
+      "status": "pending",
+      "bookingStatus": "待预订",
+      "company": "待确认",
+      "rentalPeriodDays": 1,
+      "vehicle": {
+        "example": "车型待确认",
+        "class": "6名乘客及行李空间待确认"
+      },
+      "unlimitedKilometers": null,
+      "price": {
+        "currency": "CNY",
+        "payAtCounter": null
+      },
+      "insurance": [],
+      "pickup": {
+        "date": "2027-02-10",
+        "time": "待确认",
+        "location": "丽江束河住宿",
+        "address": "丽江市束河街道文明新村23号",
+        "utcOffset": "+08:00"
+      },
+      "dropoff": {
+        "date": "2027-02-10",
+        "time": "待确认",
+        "timeZoneLabel": "北京时间；包车非自驾租车，无已约定还车截止时间",
+        "vehicleReturnPoint": "香格里拉酒店（建议17:00以后抵达）",
+        "deadlineWarning": "包车待预订，服务时间待确认；非自驾租车。",
+        "recommendedArrivalTime": "待确认",
+        "utcOffset": "+08:00"
+      },
+      "route": "丽江束河 → 虎跳峡 → 香格里拉 → 纳帕海 → 独克宗古城",
+      "suggestedDepartureTime": "08:00—08:30",
+      "serviceLabel": "六人包车"
+    },
+    "rentalChecklist": [
+      "确认2月10日六人包车",
+      "车辆需容纳6名乘客及行李；不虚构车辆、司机、报价与预订信息"
+    ],
     "drivingNotes": [],
     "drivingReferenceLinks": [],
-    "plannedRoadLegs": [],
-    "publicTransitAndRail": []
+    "plannedRoadLegs": [
+      {
+        "day": 6,
+        "route": "丽江束河 → 虎跳峡 → 香格里拉 → 纳帕海 → 独克宗古城",
+        "status": "pending"
+      }
+    ],
+    "publicTransitAndRail": [
+      {
+        "id": "rail-06",
+        "date": "2027-02-06",
+        "route": "贵阳→昆明",
+        "status": "pending",
+        "note": "订单、实际车次、时刻和票价待补充"
+      },
+      {
+        "id": "rail-08",
+        "date": "2027-02-08",
+        "route": "昆明→丽江",
+        "status": "pending",
+        "note": "订单、实际车次、时刻和票价待补充"
+      },
+      {
+        "id": "rail-11",
+        "date": "2027-02-11",
+        "route": "香格里拉→昆明",
+        "status": "pending",
+        "note": "订单、实际车次、时刻和票价待补充"
+      },
+      {
+        "id": "rail-12",
+        "date": "2027-02-12",
+        "route": "昆明南→杭州东→温州北；当天必须抵达",
+        "status": "pending",
+        "note": "订单、实际车次、时刻和票价待补充"
+      }
+    ]
   },
-  "days": [],
-  "places": [],
+  "days": [
+    {
+      "day": 1,
+      "date": "2027-02-05",
+      "title": "贵阳｜抵达休息",
+      "locations": [
+        "温州",
+        "义乌",
+        "贵阳"
+      ],
+      "schedule": [
+        {
+          "id": "d1-s1",
+          "time": "出发前",
+          "type": "transfer",
+          "text": "温州前往义乌；交通详情待补充"
+        },
+        {
+          "id": "d1-s2",
+          "time": "19:30—21:55",
+          "type": "flight",
+          "text": "义乌飞贵阳，用户已确认；航班金额1944元，三人或六人票数待核对，不推算人均金额"
+        },
+        {
+          "id": "d1-s3",
+          "time": "抵达后",
+          "type": "check-in",
+          "text": "入住海友酒店（甲秀楼青云市集店），南明区解放路69号；2月5—6日订单451.20元",
+          "placeId": "hotel-guiyang"
+        },
+        {
+          "id": "d1-s4",
+          "time": "夜间",
+          "type": "rest",
+          "text": "当晚不安排游览，休息"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2027-02-06",
+      "title": "贵阳 → 昆明",
+      "locations": [
+        "贵阳",
+        "昆明"
+      ],
+      "schedule": [
+        {
+          "id": "d2-s1",
+          "time": "上午",
+          "type": "rest",
+          "text": "贵阳休息，退房海友酒店；留出用餐时间"
+        },
+        {
+          "id": "d2-s2",
+          "time": "下午",
+          "type": "transfer",
+          "text": "贵阳 → 昆明高铁；车次、出发时间、票价及订单待补充"
+        },
+        {
+          "id": "d2-s3",
+          "time": "抵达后",
+          "type": "check-in",
+          "text": "入住海友酒店（昆明火车站店），官渡区太和街道北京路102号；2月6—8日订单1212.32元",
+          "placeId": "hotel-kunming"
+        },
+        {
+          "id": "d2-s4",
+          "time": "晚间",
+          "type": "rest",
+          "text": "自由活动与休息。六人两家同行；五笔住宿订单合计5069.90元，航班金额1944元，均为用户提供的初始资料。付款人及分摊待补充，预算未导入付款流水，避免重复计费"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2027-02-07",
+      "title": "昆明｜翠湖与滇池",
+      "locations": [
+        "翠湖公园",
+        "滇池海埂公园"
+      ],
+      "schedule": [
+        {
+          "id": "d3-s1",
+          "time": "上午",
+          "type": "attraction",
+          "text": "翠湖公园看冬季红嘴鸥，建议1.5—2小时",
+          "placeId": "cuihu"
+        },
+        {
+          "id": "d3-s2",
+          "time": "中午",
+          "type": "rest",
+          "text": "午餐与休息"
+        },
+        {
+          "id": "d3-s3",
+          "time": "下午",
+          "type": "attraction",
+          "text": "滇池海埂公园，观赏滇池与西山，建议2—2.5小时",
+          "placeId": "haigeng"
+        },
+        {
+          "id": "d3-s4",
+          "time": "晚上",
+          "type": "rest",
+          "text": "返回海友酒店（昆明火车站店）休息",
+          "placeId": "hotel-kunming"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "date": "2027-02-08",
+      "title": "昆明 → 丽江｜荒野之国与束河",
+      "locations": [
+        "昆明",
+        "丽江",
+        "荒野之国",
+        "束河古镇"
+      ],
+      "schedule": [
+        {
+          "id": "d4-s1",
+          "time": "上午",
+          "type": "check-out",
+          "text": "退房海友酒店（昆明火车站店）"
+        },
+        {
+          "id": "d4-s2",
+          "time": "上午",
+          "type": "transfer",
+          "text": "昆明 → 丽江动车；具体车次、时间、票价和订单待补充"
+        },
+        {
+          "id": "d4-s3",
+          "time": "抵达后",
+          "type": "check-in",
+          "text": "前往束河入住雪隐日照金山雪山田野度假民宿（丽江束河古镇店），束河街道文明新村23号；2月8—10日订单1974.38元",
+          "placeId": "hotel-lijiang"
+        },
+        {
+          "id": "d4-wilderness",
+          "time": "下午",
+          "type": "attraction",
+          "text": "抵达束河住宿后游览附近荒野之国；结合实际动车抵达时间与当日开放情况调整，不额外赶场",
+          "placeId": "wilderness"
+        },
+        {
+          "id": "d4-shuhe",
+          "time": "随后",
+          "type": "attraction",
+          "text": "游览束河古镇，轻松散步",
+          "placeId": "shuhe"
+        },
+        {
+          "id": "d4-dinner",
+          "time": "晚餐",
+          "type": "rest",
+          "text": "在束河古镇附近用餐，自由选择餐厅；可选推荐见下方附近美食"
+        },
+        {
+          "id": "d4-evening",
+          "time": "晚间",
+          "type": "rest",
+          "text": "返回束河民宿休息",
+          "placeId": "hotel-lijiang"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "date": "2027-02-09",
+      "title": "丽江｜白马庄园日照金山、云杉坪与蓝月谷",
+      "locations": [
+        "白马庄园（入口待核实）",
+        "云杉坪",
+        "蓝月谷",
+        "束河民宿"
+      ],
+      "schedule": [
+        {
+          "id": "d5-breakfast",
+          "time": "清晨出发前",
+          "type": "rest",
+          "text": "准备方便携带的早餐，出发时间按实际日出时间和交通距离调整"
+        },
+        {
+          "id": "d5-baima",
+          "time": "清晨",
+          "type": "attraction",
+          "text": "白马庄园观赏玉龙雪山日照金山。位置线索：玉龙雪山票务中心北侧约290米；具体入口与交通距离待核实，不能据此推算坐标。日照金山受天气影响，不保证看到",
+          "placeId": "baima"
+        },
+        {
+          "id": "d5-yunshan",
+          "time": "随后",
+          "type": "attraction",
+          "text": "游览云杉坪，关注云杉坪小索道运营、预约与体力；不安排冰川公园大索道",
+          "placeId": "yunshanping"
+        },
+        {
+          "id": "d5-lunch",
+          "time": "午餐",
+          "type": "rest",
+          "text": "景区内就近选择便捷、温热的食物，不为餐厅绕路"
+        },
+        {
+          "id": "d5-blue",
+          "time": "下午",
+          "type": "attraction",
+          "text": "游览蓝月谷，按天气、预约和身体状态灵活调整",
+          "placeId": "blue-moon"
+        },
+        {
+          "id": "d5-return",
+          "time": "傍晚",
+          "type": "return",
+          "text": "返回束河民宿休息；晚餐可选丽江腊排骨火锅",
+          "placeId": "hotel-lijiang"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "date": "2027-02-10",
+      "title": "丽江 → 香格里拉｜包车",
+      "locations": [
+        "丽江束河",
+        "虎跳峡",
+        "香格里拉",
+        "纳帕海",
+        "独克宗古城"
+      ],
+      "schedule": [
+        {
+          "id": "d6-s1",
+          "time": "08:00—08:30",
+          "type": "drive",
+          "text": "从丽江束河住宿出发，六人包车待预订；车辆须考虑6名乘客与行李空间",
+          "placeId": "hotel-lijiang"
+        },
+        {
+          "id": "d6-s2",
+          "time": "约10:00",
+          "type": "transfer",
+          "text": "抵达虎跳峡",
+          "placeId": "tiger-gorge"
+        },
+        {
+          "id": "d6-s3",
+          "time": "10:00—11:30",
+          "type": "attraction",
+          "text": "游览虎跳峡安全开放观景区域",
+          "placeId": "tiger-gorge"
+        },
+        {
+          "id": "d6-s4",
+          "time": "11:30—12:30",
+          "type": "rest",
+          "text": "午餐"
+        },
+        {
+          "id": "d6-s5",
+          "time": "12:30—15:00",
+          "type": "drive",
+          "text": "继续前往香格里拉"
+        },
+        {
+          "id": "d6-s6",
+          "time": "15:00—16:30",
+          "type": "attraction",
+          "text": "纳帕海，选择一至两个安全开放的观景点",
+          "placeId": "napahai"
+        },
+        {
+          "id": "d6-s7",
+          "time": "17:00以后",
+          "type": "check-in",
+          "text": "入住山水云涧客栈（独克宗古城大佛寺转经筒店），金龙街觉廊路43号；2月10—11日订单928元",
+          "placeId": "hotel-shangrila"
+        },
+        {
+          "id": "d6-s8",
+          "time": "晚间",
+          "type": "walk",
+          "text": "独克宗古城自由活动，用餐与休息"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "date": "2027-02-11",
+      "title": "香格里拉 → 昆明",
+      "locations": [
+        "香格里拉",
+        "昆明"
+      ],
+      "schedule": [
+        {
+          "id": "d7-s1",
+          "time": "上午（可选）",
+          "type": "note",
+          "text": "松赞林寺仅在实际动车时刻允许时安排；时间不足直接前往香格里拉站，不计入已确定地图路线"
+        },
+        {
+          "id": "d7-s2",
+          "time": "出发前",
+          "type": "check-out",
+          "text": "退房香格里拉客栈"
+        },
+        {
+          "id": "d7-s3",
+          "time": "下午",
+          "type": "transfer",
+          "text": "香格里拉 → 昆明动车；实际车次、时刻、票价与订单待确认"
+        },
+        {
+          "id": "d7-s4",
+          "time": "抵达后",
+          "type": "check-in",
+          "text": "入住悦宿酒店（昆明南高铁站店）；2月11—12日订单504元，地址：昆明市呈贡区聚贤街柏枝营小区12幢1单元201室",
+          "placeId": "hotel-kunming-south"
+        },
+        {
+          "id": "d7-s5",
+          "time": "晚上",
+          "type": "rest",
+          "text": "用餐与休息"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "date": "2027-02-12",
+      "title": "昆明 → 温州｜当天抵达",
+      "locations": [
+        "昆明南",
+        "杭州东",
+        "温州北"
+      ],
+      "schedule": [
+        {
+          "id": "d8-s1",
+          "time": "出发前",
+          "type": "check-out",
+          "text": "退房悦宿酒店（昆明南高铁站店）"
+        },
+        {
+          "id": "d8-s2",
+          "time": "当天",
+          "type": "transfer",
+          "text": "昆明南站 → 杭州东换乘 → 温州北站；必须当天抵达温州。此前10:45出发、22:44抵达仅为参考，2027春节实际车次、换乘及订单待核实",
+          "placeId": "kunming-south"
+        }
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "cuihu",
+      "name": "翠湖公园",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 25.0514918,
+        "lng": 102.7025178
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=翠湖公园",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "haigeng",
+      "name": "滇池海埂公园",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 24.9627305,
+        "lng": 102.6591731
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=滇池海埂公园",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "shuhe",
+      "name": "束河古镇",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 26.9234735,
+        "lng": 100.2035898
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=束河古镇",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "yulong",
+      "name": "玉龙雪山",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 27.0984141,
+        "lng": 100.1767026
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=玉龙雪山",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "tiger-gorge",
+      "name": "虎跳峡",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 27.2044019,
+        "lng": 100.1206446
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=虎跳峡",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "napahai",
+      "name": "纳帕海",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 27.8796165,
+        "lng": 99.640484
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=纳帕海",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "songzanlin",
+      "name": "松赞林寺（可选）",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 27.8635931,
+        "lng": 99.7042157
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=松赞林寺（可选）",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "kunming-south",
+      "name": "昆明南站",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 24.8733628,
+        "lng": 102.8603804
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=昆明南站",
+      "locationStatus": "公开地图检索"
+    },
+    {
+      "id": "hotel-guiyang",
+      "name": "海友酒店（甲秀楼青云市集店）",
+      "address": "贵州省贵阳市南明区解放路69号",
+      "countryCode": "CN",
+      "locationStatus": "住宿平台对应酒店地图坐标已核实",
+      "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+      "locationSource": "https://sg.trip.com/hotels/guiyang-hotel-detail-134056502/hotel/",
+      "geo": {
+        "lat": 26.560277,
+        "lng": 106.713554
+      },
+      "coordinateSource": "https://sg.trip.com/hotels/guiyang-hotel-detail-134056502/hotel/"
+    },
+    {
+      "id": "hotel-kunming",
+      "name": "海友酒店（昆明火车站店）",
+      "address": "官渡区太和街道北京路102号",
+      "countryCode": "CN",
+      "locationStatus": "住宿平台对应酒店地图坐标已核实",
+      "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+      "locationSource": "https://sg.trip.com/hotels/kunming-hotel-detail-133410499/hotel/",
+      "geo": {
+        "lat": 25.021695,
+        "lng": 102.720524
+      },
+      "coordinateSource": "https://sg.trip.com/hotels/kunming-hotel-detail-133410499/hotel/"
+    },
+    {
+      "id": "hotel-lijiang",
+      "name": "雪隐日照金山雪山田野度假民宿（丽江束河古镇店）",
+      "address": "丽江市束河街道文明新村23号",
+      "countryCode": "CN",
+      "locationStatus": "住宿平台对应酒店地图坐标已核实",
+      "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+      "locationSource": "https://sg.trip.com/hotels/lijiang-hotel-detail-122472153/hotel/",
+      "geo": {
+        "lat": 26.929768,
+        "lng": 100.20859
+      },
+      "coordinateSource": "https://sg.trip.com/hotels/lijiang-hotel-detail-122472153/hotel/"
+    },
+    {
+      "id": "hotel-shangrila",
+      "name": "山水云涧客栈（独克宗古城大佛寺转经筒店）",
+      "address": "香格里拉市独克宗古城金龙街觉廊路43号",
+      "countryCode": "CN",
+      "locationStatus": "住宿平台对应酒店地图坐标已核实",
+      "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+      "locationSource": "https://sg.trip.com/hotels/shangri-la-hotel-detail-2231039/hotel/",
+      "geo": {
+        "lat": 27.806763,
+        "lng": 99.708489
+      },
+      "coordinateSource": "https://sg.trip.com/hotels/shangri-la-hotel-detail-2231039/hotel/"
+    },
+    {
+      "id": "hotel-kunming-south",
+      "name": "悦宿酒店（昆明南高铁站店）",
+      "address": "昆明市呈贡区聚贤街柏枝营小区12幢1单元201室",
+      "countryCode": "CN",
+      "locationStatus": "住宿平台对应酒店地图坐标已核实",
+      "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+      "locationSource": "https://sg.trip.com/hotels/kunming-hotel-detail-126939147/hotel/",
+      "geo": {
+        "lat": 24.859484,
+        "lng": 102.862005
+      },
+      "coordinateSource": "https://sg.trip.com/hotels/kunming-hotel-detail-126939147/hotel/"
+    },
+    {
+      "id": "blue-moon",
+      "name": "蓝月谷",
+      "locationStatus": "公开地图同名景区点已核实",
+      "note": "景区示意点，不代表入口或接驳集合点",
+      "geo": {
+        "lat": 27.1293772,
+        "lng": 100.2419291
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E8%93%9D%E6%9C%88%E8%B0%B7&format=json"
+    },
+    {
+      "id": "baima",
+      "name": "白马庄园",
+      "locationStatus": "待定位",
+      "note": "已列入2月9日清晨计划；具体入口、坐标、通行和交通距离待核实。日照金山不保证看到。",
+      "locationClue": "玉龙雪山票务中心北侧约290米（用户提供，待核实具体票务中心及入口）",
+      "navigation": {
+        "disabled": true
+      }
+    },
+    {
+      "id": "dukezong",
+      "name": "独克宗古城",
+      "locationStatus": "待定位"
+    },
+    {
+      "id": "wilderness",
+      "name": "荒野之国（丽江）",
+      "countryCode": "CN",
+      "address": "丽江市古城区束河街道东阳路附近",
+      "geo": {
+        "lat": 26.923611,
+        "lng": 100.2134891
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E8%8D%92%E9%87%8E%E4%B9%8B%E5%9B%BD&format=json",
+      "locationStatus": "公开地图丽江同名点已核实",
+      "googleMapsQuery": "荒野之国 丽江市古城区束河街道"
+    },
+    {
+      "id": "yunshanping",
+      "name": "云杉坪",
+      "countryCode": "CN",
+      "geo": {
+        "lat": 27.1435719,
+        "lng": 100.2295334
+      },
+      "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E4%BA%91%E6%9D%89%E5%9D%AA&format=json",
+      "locationStatus": "公开地图景区示意点已核实",
+      "googleMapsQuery": "云杉坪 丽江玉龙雪山"
+    }
+  ],
   "restaurants": [],
   "bookingsAndTickets": [],
   "ticketPlanning": {
@@ -55,9 +810,424 @@
     "items": []
   },
   "preTrip": {
-    "packingItems": [],
+    "packingItems": [
+      {
+        "id": "todo-1",
+        "text": "补充2月6日贵阳→昆明高铁订单",
+        "completed": false
+      },
+      {
+        "id": "todo-2",
+        "text": "补充2月8日昆明→丽江动车订单",
+        "completed": false
+      },
+      {
+        "id": "todo-3",
+        "text": "补充2月11日香格里拉→昆明动车订单",
+        "completed": false
+      },
+      {
+        "id": "todo-4",
+        "text": "补充2月12日昆明→温州返程订单",
+        "completed": false
+      },
+      {
+        "id": "todo-5",
+        "text": "确认2月10日六人包车",
+        "completed": false
+      },
+      {
+        "id": "todo-6",
+        "text": "确认云杉坪小索道及蓝月谷预约（不安排冰川公园大索道）",
+        "completed": false
+      },
+      {
+        "id": "todo-7",
+        "text": "核实白马庄园准确入口、日出时间与清晨交通距离",
+        "completed": false
+      },
+      {
+        "id": "todo-8",
+        "text": "核实所有住宿房型及六人入住人数",
+        "completed": false
+      }
+    ],
     "preparationsExplicitlyMentioned": [],
-    "missingNote": ""
+    "missingNote": "",
+    "categories": [
+      "原有待办",
+      "高原适应与健康",
+      "冬季保暖",
+      "防晒与日常护理",
+      "证件及电子设备",
+      "旅行杂物",
+      "行前待办"
+    ],
+    "additionalItems": [
+      {
+        "id": "prep-item-1",
+        "text": "个人常用药物",
+        "category": "高原适应与健康",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-2",
+        "text": "个人过敏信息及紧急联系人",
+        "category": "高原适应与健康",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-3",
+        "text": "保温杯",
+        "category": "高原适应与健康",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-4",
+        "text": "指夹式血氧仪1台（可选辅助工具）",
+        "category": "高原适应与健康",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-5",
+        "text": "便携急救包1套",
+        "category": "高原适应与健康",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-6",
+        "text": "创可贴及基础清洁用品",
+        "category": "高原适应与健康",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-7",
+        "text": "景区及当地医疗服务信息",
+        "category": "高原适应与健康",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-8",
+        "text": "玉龙雪山景区供氧及医疗点信息",
+        "category": "高原适应与健康",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-9",
+        "text": "厚羽绒服或防风保暖外套1件",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-10",
+        "text": "抓绒衣或保暖中层1—2件",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-11",
+        "text": "保暖打底衣物",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-12",
+        "text": "舒适长裤",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-13",
+        "text": "防滑运动鞋或徒步鞋",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-14",
+        "text": "保暖袜及备用袜",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-15",
+        "text": "防风帽",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-16",
+        "text": "手套",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-17",
+        "text": "围巾或脖套",
+        "category": "冬季保暖",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-18",
+        "text": "SPF50+广谱防晒霜",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-19",
+        "text": "防晒润唇膏",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-20",
+        "text": "保湿面霜",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-21",
+        "text": "具有可靠紫外线防护的太阳镜",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-22",
+        "text": "润手霜",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-23",
+        "text": "纸巾和湿巾",
+        "category": "防晒与日常护理",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-24",
+        "text": "身份证",
+        "category": "证件及电子设备",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-25",
+        "text": "手机",
+        "category": "证件及电子设备",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-26",
+        "text": "充电器及数据线",
+        "category": "证件及电子设备",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-27",
+        "text": "个人随身小包",
+        "category": "证件及电子设备",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-28",
+        "text": "充电宝（符合航空及铁路携带要求）",
+        "category": "证件及电子设备",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-29",
+        "text": "酒店订单备份",
+        "category": "证件及电子设备",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-30",
+        "text": "航班及高铁订单备份",
+        "category": "证件及电子设备",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-31",
+        "text": "六人紧急联系方式",
+        "category": "证件及电子设备",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-32",
+        "text": "少量备用现金",
+        "category": "证件及电子设备",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-33",
+        "text": "折叠雨伞",
+        "category": "旅行杂物",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-34",
+        "text": "收纳袋",
+        "category": "旅行杂物",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-35",
+        "text": "备用口罩",
+        "category": "旅行杂物",
+        "scope": "personal",
+        "completed": false
+      },
+      {
+        "id": "prep-item-36",
+        "text": "垃圾袋",
+        "category": "旅行杂物",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-item-37",
+        "text": "纸质或离线行程备份",
+        "category": "旅行杂物",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-38",
+        "text": "出发前查看丽江及香格里拉天气预报",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-39",
+        "text": "查看玉龙雪山索道运营信息（预约确认见原有待办）",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-40",
+        "text": "确认2月10日冬季道路状况（包车车辆确认见原有待办）",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-41",
+        "text": "确认六人身份证及交通订单",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-42",
+        "text": "确认冬季保暖用品",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-43",
+        "text": "确认个人常用药和紧急联系人",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-44",
+        "text": "下载离线地图（行程备份见物品清单）",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      },
+      {
+        "id": "prep-action-45",
+        "text": "确认玉龙雪山及香格里拉的医疗服务信息",
+        "category": "行前待办",
+        "scope": "shared",
+        "completed": false
+      }
+    ],
+    "categoryNotes": {
+      "高原适应与健康": "血氧仪仅作辅助观察，不能单凭读数判断安全。无需六人统一购买或服用预防高原反应的药物。红景天、高原安等产品不应视为必备或保证有效；乙酰唑胺等药物由医生根据个人情况评估，不自动推荐剂量。便携氧气不能替代必要的医疗救治和下撤。",
+      "冬季保暖": "采用分层穿衣，便于在昆明、丽江和香格里拉按温度调整；无需默认购买专业登山装备。",
+      "防晒与日常护理": "防晒、润唇膏、面霜及太阳镜已合并到本类，不重复列入健康类。"
+    },
+    "altitudeGuide": {
+      "title": "高原适应指南",
+      "items": [
+        "昆明海拔约1890米；丽江市区约2400米；香格里拉市区约3200米；玉龙雪山部分游览区域超过4000米。",
+        "高原反应可能出现头痛、恶心、头晕、乏力等症状。出现症状应停止继续上升、减少活动并寻求专业判断；症状持续或加重时及时就医。",
+        "严重呼吸困难、意识异常、走路不稳属于紧急警示信号，应立即寻求急救并尽快下撤。",
+        "吸氧、血氧仪或所谓抗高反保健品均不是绝对保障。同行六人目前未报告已知心肺基础疾病，但不能据此保证不会发生高原反应。"
+      ]
+    },
+    "dailyReminders": {
+      "2027-02-08": [
+        "丽江市区海拔约2400米。抵达后以束河古镇轻松散步为主，注意休息，不安排剧烈活动。"
+      ],
+      "2027-02-09": [
+        "当天安排白马庄园、云杉坪与蓝月谷，不安排冰川公园大索道；玉龙雪山部分其他游览区超过4000米，不代表本次计划登高到该海拔。",
+        "关注天气、云杉坪小索道运营和预约，避免奔跑及剧烈活动，注意保暖、防晒。日照金山受天气影响，不能保证看到。",
+        "出现头痛、恶心、明显乏力应停止继续登高并寻求工作人员帮助；严重呼吸困难、意识异常或走路不稳时立即寻求急救并尽快下撤。"
+      ],
+      "2027-02-10": [
+        "香格里拉市区海拔约3200米；从丽江前往时注意海拔上升。虎跳峡只游览开放的安全观景区域。",
+        "抵达后优先休息；纳帕海根据天气、道路和身体状态决定是否游览，不安排高强度徒步。",
+        "注意低温、风与紫外线；当晚避免饮酒。"
+      ],
+      "2027-02-11": [
+        "按实际动车时间和身体状态决定是否游览松赞林寺。明显高原不适时取消景点、及时寻求医疗帮助；优先保证返昆动车衔接。"
+      ]
+    },
+    "todoRevisions": [
+      {
+        "id": "todo-6",
+        "previousTexts": [
+          "确认玉龙雪山索道及蓝月谷预约"
+        ],
+        "text": "确认云杉坪小索道及蓝月谷预约（不安排冰川公园大索道）"
+      },
+      {
+        "id": "todo-7",
+        "previousTexts": [
+          "核实白马庄园准确位置及是否纳入2月9日行程"
+        ],
+        "text": "核实白马庄园准确入口、日出时间与清晨交通距离"
+      }
+    ]
   },
   "mapLinks": {
     "providedGoogleMapsLinks": [],
@@ -83,14 +1253,1198 @@
     },
     "navigationPlaces": []
   },
-  "issuesAndUncertainties": [],
+  "issuesAndUncertainties": [
+    "六位成员使用待填写称呼，家庭归属尚未确认；预算不自动计为付款流水。",
+    "铁路订单均待补充；返程参考时刻不代表2027春节实际车次。",
+    "松赞林寺为可选景点，未加入2月11日已确定路线。",
+    "白马庄园已纳入2月9日清晨计划，用户提供位置线索尚不足以确认坐标；地图省略该段，不推算虚假标记。"
+  ],
   "map": {
     "schemaVersion": "1.0-lite",
     "mapMode": "template-auto",
     "templateId": "auto",
-    "disclaimer": "本图仅表达地点的相对方位与路线顺序，不代表真实比例或精确地理边界。",
-    "places": [],
-    "routes": [],
-    "dailyRoutes": []
+    "disclaimer": "本图仅表达相对方位与路线顺序，不代表真实比例。白马庄园入口待定位，未绘制该段路线；美食均为可选推荐。",
+    "places": [
+      {
+        "id": "cuihu",
+        "name": "翠湖公园",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 25.0514918,
+          "lng": 102.7025178
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=翠湖公园",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "haigeng",
+        "name": "滇池海埂公园",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 24.9627305,
+          "lng": 102.6591731
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=滇池海埂公园",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "shuhe",
+        "name": "束河古镇",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 26.9234735,
+          "lng": 100.2035898
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=束河古镇",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "tiger-gorge",
+        "name": "虎跳峡",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 27.2044019,
+          "lng": 100.1206446
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=虎跳峡",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "napahai",
+        "name": "纳帕海",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 27.8796165,
+          "lng": 99.640484
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=纳帕海",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "songzanlin",
+        "name": "松赞林寺（可选）",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 27.8635931,
+          "lng": 99.7042157
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=松赞林寺（可选）",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "kunming-south",
+        "name": "昆明南站",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 24.8733628,
+          "lng": 102.8603804
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?format=json&q=昆明南站",
+        "locationStatus": "公开地图检索"
+      },
+      {
+        "id": "hotel-guiyang",
+        "name": "海友酒店（甲秀楼青云市集店）",
+        "address": "贵州省贵阳市南明区解放路69号",
+        "countryCode": "CN",
+        "locationStatus": "住宿平台对应酒店地图坐标已核实",
+        "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+        "locationSource": "https://sg.trip.com/hotels/guiyang-hotel-detail-134056502/hotel/",
+        "geo": {
+          "lat": 26.560277,
+          "lng": 106.713554
+        },
+        "coordinateSource": "https://sg.trip.com/hotels/guiyang-hotel-detail-134056502/hotel/"
+      },
+      {
+        "id": "hotel-kunming",
+        "name": "海友酒店（昆明火车站店）",
+        "address": "官渡区太和街道北京路102号",
+        "countryCode": "CN",
+        "locationStatus": "住宿平台对应酒店地图坐标已核实",
+        "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+        "locationSource": "https://sg.trip.com/hotels/kunming-hotel-detail-133410499/hotel/",
+        "geo": {
+          "lat": 25.021695,
+          "lng": 102.720524
+        },
+        "coordinateSource": "https://sg.trip.com/hotels/kunming-hotel-detail-133410499/hotel/"
+      },
+      {
+        "id": "hotel-lijiang",
+        "name": "雪隐日照金山雪山田野度假民宿（丽江束河古镇店）",
+        "address": "丽江市束河街道文明新村23号",
+        "countryCode": "CN",
+        "locationStatus": "住宿平台对应酒店地图坐标已核实",
+        "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+        "locationSource": "https://sg.trip.com/hotels/lijiang-hotel-detail-122472153/hotel/",
+        "geo": {
+          "lat": 26.929768,
+          "lng": 100.20859
+        },
+        "coordinateSource": "https://sg.trip.com/hotels/lijiang-hotel-detail-122472153/hotel/"
+      },
+      {
+        "id": "hotel-shangrila",
+        "name": "山水云涧客栈（独克宗古城大佛寺转经筒店）",
+        "address": "香格里拉市独克宗古城金龙街觉廊路43号",
+        "countryCode": "CN",
+        "locationStatus": "住宿平台对应酒店地图坐标已核实",
+        "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+        "locationSource": "https://sg.trip.com/hotels/shangri-la-hotel-detail-2231039/hotel/",
+        "geo": {
+          "lat": 27.806763,
+          "lng": 99.708489
+        },
+        "coordinateSource": "https://sg.trip.com/hotels/shangri-la-hotel-detail-2231039/hotel/"
+      },
+      {
+        "id": "hotel-kunming-south",
+        "name": "悦宿酒店（昆明南高铁站店）",
+        "address": "昆明市呈贡区聚贤街柏枝营小区12幢1单元201室",
+        "countryCode": "CN",
+        "locationStatus": "住宿平台对应酒店地图坐标已核实",
+        "note": "用于旅行示意图；导航仍以酒店订单地址为准",
+        "locationSource": "https://sg.trip.com/hotels/kunming-hotel-detail-126939147/hotel/",
+        "geo": {
+          "lat": 24.859484,
+          "lng": 102.862005
+        },
+        "coordinateSource": "https://sg.trip.com/hotels/kunming-hotel-detail-126939147/hotel/"
+      },
+      {
+        "id": "blue-moon",
+        "name": "蓝月谷",
+        "locationStatus": "公开地图同名景区点已核实",
+        "note": "景区示意点，不代表入口或接驳集合点",
+        "geo": {
+          "lat": 27.1293772,
+          "lng": 100.2419291
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E8%93%9D%E6%9C%88%E8%B0%B7&format=json"
+      },
+      {
+        "id": "wilderness",
+        "name": "荒野之国（丽江）",
+        "countryCode": "CN",
+        "address": "丽江市古城区束河街道东阳路附近",
+        "geo": {
+          "lat": 26.923611,
+          "lng": 100.2134891
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E8%8D%92%E9%87%8E%E4%B9%8B%E5%9B%BD&format=json",
+        "locationStatus": "公开地图丽江同名点已核实"
+      },
+      {
+        "id": "yunshanping",
+        "name": "云杉坪",
+        "countryCode": "CN",
+        "geo": {
+          "lat": 27.1435719,
+          "lng": 100.2295334
+        },
+        "coordinateSource": "https://nominatim.openstreetmap.org/search?q=%E4%BA%91%E6%9D%89%E5%9D%AA&format=json",
+        "locationStatus": "公开地图景区示意点已核实"
+      }
+    ],
+    "routes": [
+      {
+        "day": 2,
+        "placeIds": [
+          "hotel-guiyang",
+          "hotel-kunming"
+        ]
+      },
+      {
+        "day": 3,
+        "placeIds": [
+          "hotel-kunming",
+          "cuihu",
+          "haigeng",
+          "hotel-kunming"
+        ]
+      },
+      {
+        "day": 4,
+        "placeIds": [
+          "hotel-kunming",
+          "hotel-lijiang",
+          "wilderness",
+          "shuhe"
+        ]
+      },
+      {
+        "day": 5,
+        "placeIds": [
+          "hotel-lijiang",
+          "yunshanping",
+          "blue-moon",
+          "hotel-lijiang"
+        ]
+      },
+      {
+        "day": 6,
+        "placeIds": [
+          "hotel-lijiang",
+          "tiger-gorge",
+          "napahai",
+          "hotel-shangrila"
+        ]
+      },
+      {
+        "day": 7,
+        "placeIds": [
+          "hotel-shangrila",
+          "hotel-kunming-south"
+        ]
+      },
+      {
+        "day": 8,
+        "placeIds": [
+          "hotel-kunming-south",
+          "kunming-south"
+        ]
+      }
+    ],
+    "dailyRoutes": [
+      {
+        "day": 2,
+        "placeIds": [
+          "hotel-guiyang",
+          "hotel-kunming"
+        ]
+      },
+      {
+        "day": 3,
+        "placeIds": [
+          "hotel-kunming",
+          "cuihu",
+          "haigeng",
+          "hotel-kunming"
+        ]
+      },
+      {
+        "day": 4,
+        "placeIds": [
+          "hotel-kunming",
+          "hotel-lijiang",
+          "wilderness",
+          "shuhe"
+        ]
+      },
+      {
+        "day": 5,
+        "placeIds": [
+          "hotel-lijiang",
+          "yunshanping",
+          "blue-moon",
+          "hotel-lijiang"
+        ]
+      },
+      {
+        "day": 6,
+        "placeIds": [
+          "hotel-lijiang",
+          "tiger-gorge",
+          "napahai",
+          "hotel-shangrila"
+        ]
+      },
+      {
+        "day": 7,
+        "placeIds": [
+          "hotel-shangrila",
+          "hotel-kunming-south"
+        ]
+      },
+      {
+        "day": 8,
+        "placeIds": [
+          "hotel-kunming-south",
+          "kunming-south"
+        ]
+      }
+    ],
+    "region": {
+      "id": "yunnan-guizhou",
+      "label": "云南 · 贵阳",
+      "countryCode": "CN"
+    }
+  },
+  "routeMap": {
+    "defaultRegionId": "yunnan-guizhou",
+    "regions": [
+      {
+        "id": "yunnan-guizhou",
+        "label": "云南 · 贵阳",
+        "countryCode": "CN",
+        "scope": "template-schematic",
+        "mapMode": "frozen-template",
+        "templateId": "broad-riverland",
+        "mapModeReason": "separated-clusters-or-long-jump",
+        "mapModeMetrics": {
+          "placeCount": 15,
+          "geoPlaceCount": 15,
+          "widthKm": 702.77,
+          "heightKm": 335.23,
+          "spanKm": 714.49,
+          "averageNearestKm": 32.48,
+          "components": 1,
+          "largestLegKm": 454.01,
+          "jumpRatio": 42.06
+        },
+        "days": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "canvas": {
+          "width": 1448,
+          "height": 1086
+        },
+        "projection": {
+          "type": "relative-schematic",
+          "bounds": null
+        },
+        "baseImage": "assets/maps/templates/template-10-broad-riverland.webp",
+        "title": "云南 · 贵阳 · 旅行路线",
+        "ariaLabel": "云南 · 贵阳模板化旅行路线示意图，共7天",
+        "disclaimer": "本图仅表达相对方位与路线顺序，不代表真实比例。白马庄园入口待定位，未绘制该段路线；美食均为可选推荐。",
+        "heading": {
+          "text": "云南 · 贵阳",
+          "x": 33,
+          "y": 105,
+          "size": 40
+        },
+        "legend": {
+          "x": 35,
+          "y": 168,
+          "gap": 43
+        },
+        "annotations": [],
+        "routes": [
+          {
+            "day": 2,
+            "color": "#e77e22",
+            "placeIds": [
+              "hotel-guiyang",
+              "hotel-kunming"
+            ],
+            "paths": [
+              "M1173.6 502.67 C973.6 536.6 782.9 599.0 612.69 686.21"
+            ],
+            "overviewPaths": [
+              "M1173.6 502.67 C973.6 536.6 782.9 599.0 612.69 686.21"
+            ]
+          },
+          {
+            "day": 3,
+            "color": "#618344",
+            "placeIds": [
+              "hotel-kunming",
+              "cuihu",
+              "haigeng",
+              "hotel-kunming"
+            ],
+            "paths": [
+              "M612.69 686.21 C644.3 673.3 676.9 669.9 708.5 676.32 C653.4 697.8 608.4 732.6 576.38 778.47 C579.5 743.5 591.8 712.1 612.69 686.21"
+            ],
+            "overviewPaths": [
+              "M612.69 686.21 C609.6 721.2 597.2 752.6 576.38 778.47 C598.0 750.7 610.3 719.4 612.69 686.21"
+            ]
+          },
+          {
+            "day": 4,
+            "color": "#209aaa",
+            "placeIds": [
+              "hotel-kunming",
+              "hotel-lijiang",
+              "wilderness",
+              "shuhe"
+            ],
+            "paths": [
+              "M612.69 686.21 C521.8 606.0 417.2 552.4 305.16 528.71 C283.5 501.7 270.9 471.0 268.03 438.33 C304.8 484.5 351.1 517.0 404.31 533.95"
+            ],
+            "overviewPaths": [
+              "M612.69 686.21 C521.8 606.0 417.2 552.4 305.16 528.71 C339.4 520.6 373.1 522.4 404.31 533.95"
+            ]
+          },
+          {
+            "day": 5,
+            "color": "#8865a5",
+            "placeIds": [
+              "hotel-lijiang",
+              "yunshanping",
+              "blue-moon",
+              "hotel-lijiang"
+            ],
+            "paths": [
+              "M305.16 528.71 C317.4 497.0 337.2 471.1 363.43 452.61 C392.9 436.4 415.6 413.5 430.3 385.27 C402.1 446.6 359.5 495.3 305.16 528.71"
+            ],
+            "overviewPaths": [
+              "M305.16 528.71 C333.4 467.4 375.9 418.7 430.3 385.27 C373.4 421.5 330.9 470.3 305.16 528.71"
+            ]
+          },
+          {
+            "day": 6,
+            "color": "#df6185",
+            "placeIds": [
+              "hotel-lijiang",
+              "tiger-gorge",
+              "napahai",
+              "hotel-shangrila"
+            ],
+            "paths": [
+              "M305.16 528.71 C331.2 473.6 340.3 415.8 331.79 358.78 C277.9 334.5 234.9 297.5 205.33 250.08 C207.8 283.9 219.2 314.3 238.88 339.66"
+            ],
+            "overviewPaths": [
+              "M305.16 528.71 C299.1 424.0 265.1 329.3 205.33 250.08 C225.7 277.2 237.1 307.6 238.88 339.66"
+            ]
+          },
+          {
+            "day": 7,
+            "color": "#397dc1",
+            "placeIds": [
+              "hotel-shangrila",
+              "hotel-kunming-south"
+            ],
+            "paths": [
+              "M238.88 339.66 C406.5 463.3 553.0 608.2 669.76 765.95"
+            ],
+            "overviewPaths": [
+              "M238.88 339.66 C406.5 463.3 553.0 608.2 669.76 765.95"
+            ]
+          },
+          {
+            "day": 8,
+            "color": "#e77e22",
+            "placeIds": [
+              "hotel-kunming-south",
+              "kunming-south"
+            ],
+            "paths": [
+              "M669.76 765.95 C703.3 772.6 735.9 769.7 765.82 757.39"
+            ],
+            "overviewPaths": [
+              "M669.76 765.95 C703.3 772.6 735.9 769.7 765.82 757.39"
+            ]
+          }
+        ],
+        "places": [
+          {
+            "id": "cuihu",
+            "x": 708.5,
+            "y": 676.32,
+            "color": "#618344",
+            "tx": 740.5,
+            "ty": 644.32,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "翠湖公园"
+            ],
+            "query": "翠湖公园 云南 · 贵阳",
+            "geo": {
+              "lat": 25.0514918,
+              "lng": 102.7025178
+            },
+            "days": [
+              3
+            ]
+          },
+          {
+            "id": "haigeng",
+            "x": 576.38,
+            "y": 778.47,
+            "color": "#618344",
+            "tx": 544.38,
+            "ty": 746.47,
+            "size": 24,
+            "anchor": "end",
+            "lines": [
+              "滇池海埂公园"
+            ],
+            "query": "滇池海埂公园 云南 · 贵阳",
+            "geo": {
+              "lat": 24.9627305,
+              "lng": 102.6591731
+            },
+            "days": [
+              3
+            ]
+          },
+          {
+            "id": "shuhe",
+            "x": 404.31,
+            "y": 533.95,
+            "color": "#209aaa",
+            "tx": 482.31,
+            "ty": 471.95,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "束河古镇"
+            ],
+            "query": "束河古镇 云南 · 贵阳",
+            "geo": {
+              "lat": 26.9234735,
+              "lng": 100.2035898
+            },
+            "days": [
+              4
+            ]
+          },
+          {
+            "id": "tiger-gorge",
+            "x": 331.79,
+            "y": 358.78,
+            "color": "#df6185",
+            "tx": 469.79,
+            "ty": 270.78,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "虎跳峡"
+            ],
+            "query": "虎跳峡 云南 · 贵阳",
+            "geo": {
+              "lat": 27.2044019,
+              "lng": 100.1206446
+            },
+            "days": [
+              6
+            ]
+          },
+          {
+            "id": "napahai",
+            "x": 205.33,
+            "y": 250.08,
+            "color": "#df6185",
+            "tx": 237.33,
+            "ty": 218.08,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "纳帕海"
+            ],
+            "query": "纳帕海 云南 · 贵阳",
+            "geo": {
+              "lat": 27.8796165,
+              "lng": 99.640484
+            },
+            "days": [
+              6
+            ]
+          },
+          {
+            "id": "songzanlin",
+            "x": 302.4,
+            "y": 267.78,
+            "color": "#397dc1",
+            "tx": 440.4,
+            "ty": 179.78,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "松赞林寺（可选）"
+            ],
+            "query": "松赞林寺（可选） 云南 · 贵阳",
+            "geo": {
+              "lat": 27.8635931,
+              "lng": 99.7042157
+            },
+            "days": []
+          },
+          {
+            "id": "kunming-south",
+            "x": 765.82,
+            "y": 757.39,
+            "color": "#e77e22",
+            "tx": 797.82,
+            "ty": 725.39,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "昆明南站"
+            ],
+            "query": "昆明南站 云南 · 贵阳",
+            "geo": {
+              "lat": 24.8733628,
+              "lng": 102.8603804
+            },
+            "days": [
+              8
+            ]
+          },
+          {
+            "id": "hotel-guiyang",
+            "x": 1173.6,
+            "y": 502.67,
+            "color": "#e77e22",
+            "tx": 1141.6,
+            "ty": 470.67,
+            "size": 24,
+            "anchor": "end",
+            "lines": [
+              "海友酒店（甲秀楼青云市集店）"
+            ],
+            "query": "海友酒店（甲秀楼青云市集店） 云南 · 贵阳",
+            "geo": {
+              "lat": 26.560277,
+              "lng": 106.713554
+            },
+            "days": [
+              2
+            ]
+          },
+          {
+            "id": "hotel-kunming",
+            "x": 612.69,
+            "y": 686.21,
+            "color": "#e77e22",
+            "tx": 534.69,
+            "ty": 624.21,
+            "size": 24,
+            "anchor": "end",
+            "lines": [
+              "海友酒店（昆明火车站店）"
+            ],
+            "query": "海友酒店（昆明火车站店） 云南 · 贵阳",
+            "geo": {
+              "lat": 25.021695,
+              "lng": 102.720524
+            },
+            "days": [
+              2,
+              3,
+              4
+            ]
+          },
+          {
+            "id": "hotel-lijiang",
+            "x": 305.16,
+            "y": 528.71,
+            "color": "#209aaa",
+            "tx": 337.16,
+            "ty": 578.71,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "雪隐日照金山雪山田野度假民宿（丽江束河古镇店）"
+            ],
+            "query": "雪隐日照金山雪山田野度假民宿（丽江束河古镇店） 云南 · 贵阳",
+            "geo": {
+              "lat": 26.929768,
+              "lng": 100.20859
+            },
+            "days": [
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "id": "hotel-shangrila",
+            "x": 238.88,
+            "y": 339.66,
+            "color": "#df6185",
+            "tx": 376.88,
+            "ty": 251.66,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "山水云涧客栈（独克宗古城大佛寺转经筒店）"
+            ],
+            "query": "山水云涧客栈（独克宗古城大佛寺转经筒店） 云南 · 贵阳",
+            "geo": {
+              "lat": 27.806763,
+              "lng": 99.708489
+            },
+            "days": [
+              6,
+              7
+            ]
+          },
+          {
+            "id": "hotel-kunming-south",
+            "x": 669.76,
+            "y": 765.95,
+            "color": "#397dc1",
+            "tx": 807.76,
+            "ty": 867.95,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "悦宿酒店（昆明南高铁站店）"
+            ],
+            "query": "悦宿酒店（昆明南高铁站店） 云南 · 贵阳",
+            "geo": {
+              "lat": 24.859484,
+              "lng": 102.862005
+            },
+            "days": [
+              7,
+              8
+            ]
+          },
+          {
+            "id": "blue-moon",
+            "x": 430.3,
+            "y": 385.27,
+            "color": "#8865a5",
+            "tx": 462.3,
+            "ty": 353.27,
+            "size": 24,
+            "anchor": "start",
+            "lines": [
+              "蓝月谷"
+            ],
+            "query": "蓝月谷 云南 · 贵阳",
+            "geo": {
+              "lat": 27.1293772,
+              "lng": 100.2419291
+            },
+            "days": [
+              5
+            ]
+          },
+          {
+            "id": "wilderness",
+            "x": 268.03,
+            "y": 438.33,
+            "color": "#209aaa",
+            "tx": 236.03,
+            "ty": 488.33,
+            "size": 24,
+            "anchor": "end",
+            "lines": [
+              "荒野之国（丽江）"
+            ],
+            "query": "荒野之国（丽江） 云南 · 贵阳",
+            "geo": {
+              "lat": 26.923611,
+              "lng": 100.2134891
+            },
+            "days": [
+              4
+            ]
+          },
+          {
+            "id": "yunshanping",
+            "x": 363.43,
+            "y": 452.61,
+            "color": "#8865a5",
+            "tx": 225.43,
+            "ty": 554.61,
+            "size": 24,
+            "anchor": "end",
+            "lines": [
+              "云杉坪"
+            ],
+            "query": "云杉坪 云南 · 贵阳",
+            "geo": {
+              "lat": 27.1435719,
+              "lng": 100.2295334
+            },
+            "days": [
+              5
+            ]
+          }
+        ],
+        "overviewPlaceIds": [
+          "hotel-guiyang",
+          "hotel-kunming",
+          "haigeng",
+          "hotel-lijiang",
+          "shuhe",
+          "blue-moon",
+          "napahai",
+          "hotel-shangrila",
+          "hotel-kunming-south",
+          "kunming-south"
+        ],
+        "dailyLayouts": {
+          "2": {
+            "places": [
+              "hotel-guiyang",
+              "hotel-kunming"
+            ],
+            "labels": {
+              "hotel-guiyang": {
+                "x": 1141.6,
+                "y": 470.67,
+                "anchor": "end"
+              },
+              "hotel-kunming": {
+                "x": 534.69,
+                "y": 624.21,
+                "anchor": "end"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 893.14,
+                "y": 594.44
+              }
+            ]
+          },
+          "3": {
+            "places": [
+              "hotel-kunming",
+              "cuihu",
+              "haigeng"
+            ],
+            "labels": {
+              "hotel-kunming": {
+                "x": 534.69,
+                "y": 624.21,
+                "anchor": "end"
+              },
+              "cuihu": {
+                "x": 740.5,
+                "y": 644.32,
+                "anchor": "start"
+              },
+              "haigeng": {
+                "x": 544.38,
+                "y": 746.47,
+                "anchor": "end"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 660.6,
+                "y": 681.27
+              },
+              {
+                "items": [],
+                "x": 642.44,
+                "y": 727.39
+              },
+              {
+                "items": [],
+                "x": 594.54,
+                "y": 732.34
+              }
+            ]
+          },
+          "4": {
+            "places": [
+              "hotel-kunming",
+              "hotel-lijiang",
+              "wilderness",
+              "shuhe"
+            ],
+            "labels": {
+              "hotel-kunming": {
+                "x": 534.69,
+                "y": 624.21,
+                "anchor": "end"
+              },
+              "hotel-lijiang": {
+                "x": 337.16,
+                "y": 578.71,
+                "anchor": "start"
+              },
+              "wilderness": {
+                "x": 236.03,
+                "y": 488.33,
+                "anchor": "end"
+              },
+              "shuhe": {
+                "x": 482.31,
+                "y": 471.95,
+                "anchor": "start"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 458.93,
+                "y": 607.46
+              },
+              {
+                "items": [],
+                "x": 286.6,
+                "y": 483.52
+              },
+              {
+                "items": [],
+                "x": 336.17,
+                "y": 486.14
+              }
+            ]
+          },
+          "5": {
+            "places": [
+              "hotel-lijiang",
+              "yunshanping",
+              "blue-moon"
+            ],
+            "labels": {
+              "hotel-lijiang": {
+                "x": 337.16,
+                "y": 578.71,
+                "anchor": "start"
+              },
+              "yunshanping": {
+                "x": 225.43,
+                "y": 554.61,
+                "anchor": "end"
+              },
+              "blue-moon": {
+                "x": 462.3,
+                "y": 353.27,
+                "anchor": "start"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 334.3,
+                "y": 490.66
+              },
+              {
+                "items": [],
+                "x": 396.87,
+                "y": 418.94
+              },
+              {
+                "items": [],
+                "x": 367.73,
+                "y": 456.99
+              }
+            ]
+          },
+          "6": {
+            "places": [
+              "hotel-lijiang",
+              "tiger-gorge",
+              "napahai",
+              "hotel-shangrila"
+            ],
+            "labels": {
+              "hotel-lijiang": {
+                "x": 337.16,
+                "y": 578.71,
+                "anchor": "start"
+              },
+              "tiger-gorge": {
+                "x": 469.79,
+                "y": 270.78,
+                "anchor": "start"
+              },
+              "napahai": {
+                "x": 237.33,
+                "y": 218.08,
+                "anchor": "start"
+              },
+              "hotel-shangrila": {
+                "x": 376.88,
+                "y": 251.66,
+                "anchor": "start"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 318.48,
+                "y": 443.75
+              },
+              {
+                "items": [],
+                "x": 268.56,
+                "y": 304.43
+              },
+              {
+                "items": [],
+                "x": 222.11,
+                "y": 294.87
+              }
+            ]
+          },
+          "7": {
+            "places": [
+              "hotel-shangrila",
+              "hotel-kunming-south"
+            ],
+            "labels": {
+              "hotel-shangrila": {
+                "x": 376.88,
+                "y": 251.66,
+                "anchor": "start"
+              },
+              "hotel-kunming-south": {
+                "x": 807.76,
+                "y": 867.95,
+                "anchor": "start"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 454.32,
+                "y": 552.81
+              }
+            ]
+          },
+          "8": {
+            "places": [
+              "hotel-kunming-south",
+              "kunming-south"
+            ],
+            "labels": {
+              "hotel-kunming-south": {
+                "x": 807.76,
+                "y": 867.95,
+                "anchor": "start"
+              },
+              "kunming-south": {
+                "x": 797.82,
+                "y": 725.39,
+                "anchor": "start"
+              }
+            },
+            "transport": [
+              {
+                "items": [],
+                "x": 717.79,
+                "y": 761.67
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "initialTravelers": [
+      {
+        "id": "traveler-1",
+        "name": "成员1（待填写）",
+        "family": ""
+      },
+      {
+        "id": "traveler-2",
+        "name": "成员2（待填写）",
+        "family": ""
+      },
+      {
+        "id": "traveler-3",
+        "name": "成员3（待填写）",
+        "family": ""
+      },
+      {
+        "id": "traveler-4",
+        "name": "成员4（待填写）",
+        "family": ""
+      },
+      {
+        "id": "traveler-5",
+        "name": "成员5（待填写）",
+        "family": ""
+      },
+      {
+        "id": "traveler-6",
+        "name": "成员6（待填写）",
+        "family": ""
+      }
+    ],
+    "familyGroups": [
+      "家庭一",
+      "家庭二"
+    ],
+    "budgetSummary": "两家六人；成员姓名与家庭归属待填写。住宿订单预算5069.90元，航班提供金额1944元（票数待核对），均未自动计入实际付款流水；请按真实付款记录记账。"
+  },
+  "foodRecommendations": {
+    "notice": "以下均为可选推荐，未预约、不自动计入支出。营业时间、春节营业安排、菜单和价格待出发前复核。六人家庭聚餐先确认座位，可选清淡做法；不为网红店长距离绕路。野生菌须充分煮熟，不自行采食；不推荐酒精饮品。",
+    "items": [
+      {
+        "id": "food-guiyang",
+        "date": "2027-02-06",
+        "dishes": "酸汤牛肉、丝娃娃",
+        "restaurant": null,
+        "reason": "体验贵州地方特色，可请店家按需调整辣度",
+        "routeRelation": "贵阳休息期间就近用餐；根据赴昆明高铁时间安排，不影响出发"
+      },
+      {
+        "id": "food-kunming-lunch",
+        "date": "2027-02-07",
+        "dishes": "过桥米线",
+        "restaurant": "桥香园过桥米线（翠湖店）",
+        "reason": "温热主食，可按个人口味选配料",
+        "routeRelation": "午餐结合翠湖游览，就近选择；不必固定此店",
+        "address": "昆明市五华区东风西路326号",
+        "addressVerified": true,
+        "sourceUrl": "https://www.amap.com/place/B0FFFRMHRW"
+      },
+      {
+        "id": "food-kunming-dinner",
+        "date": "2027-02-07",
+        "dishes": "汽锅鸡、宜良烤鸭等云南菜",
+        "restaurant": null,
+        "reason": "地方菜与清淡菜搭配，适合家庭分食",
+        "routeRelation": "滇池游览后按返酒店路线就近选择云南菜馆"
+      },
+      {
+        "id": "food-shuhe",
+        "date": "2027-02-08",
+        "dishes": "纳西小锅饭、东巴烤鱼、鸡豆凉粉、纳西小炒肉",
+        "restaurant": "浮娴小锅饭·云南民俗风味餐厅（束河古镇店）",
+        "reason": "多种纳西菜可供六人搭配，点菜前确认清淡口味与份量",
+        "routeRelation": "荒野之国及束河古镇游览后，在古镇附近晚餐",
+        "address": "丽江市古城区束河街道康普巷30号",
+        "addressVerified": true,
+        "referencePrice": {
+          "currency": "CNY",
+          "perPerson": 76,
+          "note": "历史用户反馈参考，非2027年确认价格"
+        },
+        "sourceUrl": "https://gs.ctrip.com/html5/you/foods/fooddetail/32/5589658.html",
+        "addressSourceUrl": "https://www.amap.com/place/B0FFFDCFFR"
+      },
+      {
+        "id": "food-snow-breakfast",
+        "date": "2027-02-09",
+        "dishes": "方便携带的早餐；便捷温热的午餐",
+        "restaurant": null,
+        "reason": "清晨活动提前准备早餐，午餐以方便与正常进食为先",
+        "routeRelation": "白马庄园观景前准备；云杉坪、蓝月谷景区内就近用餐"
+      },
+      {
+        "id": "food-snow-dinner",
+        "date": "2027-02-09",
+        "dishes": "丽江腊排骨火锅",
+        "restaurant": "阿婆腊排骨（具体门店待核实）",
+        "reason": "热食便于多人分食，可配蔬菜并调整咸淡",
+        "routeRelation": "傍晚回束河后优先就近用餐；不为大研古城门店专程绕路",
+        "verificationNote": "公开资料有阿婆情腊排骨火锅（古城旗舰店）等近似名称，尚未确认与用户所指门店一致，暂不提供地址导航或人均价",
+        "sourceUrl": "https://gs.ctrip.com/html5/you/foods/fooddetail/32/15319330.html"
+      },
+      {
+        "id": "food-shangrila",
+        "date": "2027-02-10",
+        "dishes": "藏式牦牛肉火锅、藏式肉饼、青稞类主食",
+        "restaurant": "静静的嘛呢石藏餐（具体门店及地址待复核）",
+        "reason": "温热主食与火锅可按六人食量搭配，口味可选清淡",
+        "routeRelation": "长途包车后在住宿和独克宗古城附近正常用餐，优先休息；不绕路",
+        "verificationNote": "检索存在北门街等不同地址，尚不能唯一确认本次门店，不开放导航",
+        "sourceUrl": "https://www.trip.com/restaurant/china/shangri-la/detail/the-silent-holy-stones-tibetan-cuisine-184663/"
+      },
+      {
+        "id": "food-shangrila-return",
+        "date": "2027-02-11",
+        "dishes": "藏式家常菜",
+        "restaurant": null,
+        "reason": "保留地方风味与清淡选择，不固定餐厅",
+        "routeRelation": "早餐或午餐可体验；结合实际动车时刻，优先保证返昆衔接，不专程绕路"
+      }
+    ]
   }
 }

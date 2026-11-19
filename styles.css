@@ -447,3 +447,39 @@ button:focus-visible,a:focus-visible {outline:2px solid var(--lake);outline-offs
   .is-daily .transport-pin svg {width:13px;height:13px;}
   #map-dialog-content .daily-fullscreen {width:100%;min-width:0;}
 }
+
+/* Preparation controls reuse the existing palette and checklist rows. */
+.prep-info, .prep-group { margin: 12px 0; border-bottom: 1px solid var(--line); }
+.prep-info summary, .prep-group summary, .prep-completed summary { min-height: 44px; display: list-item; align-content: center; cursor: pointer; font-size: 13px; font-weight: 650; }
+.prep-info ul { padding-left: 20px; font-size: 13px; line-height: 1.8; }
+.prep-group summary small, .prep-scope { color: var(--muted); font-size: 11px; font-weight: 400; }
+.prep-scope { display: block; text-decoration: none; }
+.prep-completed { margin: 8px 0; }
+.todo-form { grid-template-columns: minmax(0,1fr) minmax(110px,.5fr) minmax(110px,.5fr) auto; }
+.todo-form select, .todo-editor select, .todo-editor .prep-input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); font: inherit; font-size: 13px; }
+.todo-actions { display: flex; }
+.todo-actions button, .todo-editor button { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.todo-editor { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0,1fr) minmax(110px,.5fr) minmax(110px,.5fr) auto auto; gap: 8px; padding: 8px 0; }
+.todo-editor input.prep-input { position: static; opacity: 1; pointer-events: auto; }
+.todo-item input:focus-visible + .todo-check { outline: 2px solid var(--lake); outline-offset: 3px; }
+@media (max-width: 700px) {
+  .todo-form { grid-template-columns: minmax(0,1fr) auto; }
+  .todo-form > input { grid-column: 1 / -1; }
+  .todo-form > select { grid-column: 1; }
+  .todo-form > button { grid-column: 2; grid-row: 2 / 4; }
+  .todo-editor { grid-template-columns: minmax(0,1fr) auto auto; }
+  .todo-editor .prep-input, .todo-editor select { grid-column: 1 / -1; }
+}
+
+.prep-note { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 10px 0; }
+#prep-save-status:empty { display: none; }
+
+/* Optional daily food recommendations follow existing details typography. */
+.food-item { padding: 10px 0; border-top: 1px solid var(--line); }
+.food-item h4 { margin: 4px 0 8px; font-size: 14px; }
+.food-item p { margin: 5px 0; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.food-item a { color: var(--lake); font-size: 12px; }
+.food-status { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.food-status button { min-height: 44px; min-width: 64px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+.food-status button[aria-pressed="true"] { color: white; background: var(--forest); border-color: var(--forest); }
+.food-status button:focus-visible { outline: 2px solid var(--lake); outline-offset: 3px; }

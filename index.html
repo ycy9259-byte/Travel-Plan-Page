@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>AI 旅行网页模板</title>
-  <link rel="stylesheet" href="styles.css?v=20260910-3">
+  <link rel="stylesheet" href="styles.css?v=20261119-food">
   <link rel="stylesheet" href="ledger.css?v=20260910-2">
   <script src="runtime-storage.js?v=20260910-2" defer></script>
   <script src="overview-map.js?v=20260910-2" defer></script>
   <script src="route-ui.js?v=20260910-2" defer></script>
-  <script src="app.js?v=20260910-4" defer></script>
+  <script src="app.js?v=20261119-food" defer></script>
   <script src="ticket-pdf-preview.js?v=20260910-2" defer></script>
   <script src="ledger.js?v=20260910-3" defer></script>
   <script src="site-navigation.js?v=20260910-2" defer></script>
@@ -95,14 +95,19 @@
       <div class="section-heading">
         <div>
           <p class="section-kicker">BEFORE WE GO</p>
-          <h2 id="prep-title">旅行前准备</h2>
+          <h2 id="prep-title">行前准备</h2>
         </div>
         <span class="soft-label" id="todo-progress">0 / 0</span>
       </div>
+      <p class="prep-note">个人物品供每人分别准备；六人共同物品由同行者协调。一项勾选表示该准备事项已完成。当前状态仅保存在本浏览器，不同设备不会自动同步。</p>
+      <div id="prep-guide"></div>
       <form class="todo-form" id="todo-form">
         <input id="todo-input" type="text" maxlength="80" placeholder="添加一项准备事项" aria-label="准备事项">
+        <select id="todo-category" aria-label="准备事项类别"></select>
+        <select id="todo-scope" aria-label="准备事项归属"><option value="personal">个人物品（每人准备）</option><option value="shared">六人共同</option></select>
         <button type="submit">添加</button>
       </form>
+      <p id="prep-save-status" class="prep-note" role="status" aria-live="polite"></p>
       <div class="todo-list" id="todo-list"></div>
     </section>
 

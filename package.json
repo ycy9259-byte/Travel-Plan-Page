@@ -10,6 +10,7 @@
     "build:map": "node scripts/build-map.mjs",
     "validate": "node scripts/validate-lite.mjs",
     "test:runtime": "node --test tests/runtime/runtime-storage.test.cjs",
-    "preview": "node local-preview-server.mjs"
+    "preview": "node local-preview-server.mjs",
+    "build:pages": "node scripts/build-pages.mjs"
   }
 }
