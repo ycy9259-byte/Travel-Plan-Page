@@ -143,6 +143,9 @@
   let initialized = false;
   let familyGroups = [];
   let budgetSummary = "";
+  let familyFilter = "all";
+  let plannedCosts = [];
+  let externalPaidItems = [];
   let activeTab = "entry";
   let editingBillId = null;
   let openDialogName = null;
@@ -265,7 +268,7 @@
       const color = isValidColor(traveler?.color)
         ? traveler.color.toUpperCase()
         : AVATAR_COLORS[index % AVATAR_COLORS.length];
-      return [{ id, name, initial: avatarInitial(name), color, family: String(traveler.family || "").trim().slice(0, 30) }];
+      return [{ ...traveler, id, name, initial: avatarInitial(name), color, family: String(traveler.family || "").trim().slice(0, 30) }];
     });
     const travelerIds = new Set(travelers.map((traveler) => traveler.id));
     const requestedBase = String(raw.settings?.baseCurrency || DEFAULT_SETTINGS.baseCurrency).toUpperCase();
@@ -287,9 +290,12 @@
         .filter((id) => travelerIds.has(id));
       if (!Number.isSafeInteger(originalAmountCents) || originalAmountCents <= 0) return [];
       if (!Number.isSafeInteger(baseAmountCents) || baseAmountCents <= 0) return [];
-      if (!CURRENCY_BY_CODE.has(currency) || !travelerIds.has(payerId) || !participantIds.length) return [];
+      if (!CURRENCY_BY_CODE.has(currency)) return [];
       const category = CATEGORIES.includes(bill?.category) ? bill.category : "其他";
       return [{
+        ...bill,
+        paymentStatus: ["paid", "estimated", "unpaid"].includes(bill.paymentStatus) ? bill.paymentStatus : "paid",
+        familyScope: ["家庭A", "家庭B", "shared", "pending"].includes(bill.familyScope) ? bill.familyScope : undefined,
         id: String(bill.id || makeId("bill")),
         originalAmountCents,
         baseAmountCents,
@@ -532,7 +538,70 @@
     }));
   }
 
-  function calculateStats() {
+  function familyFor(traveler) {
+    return ({ "家庭一": "家庭A", "家庭二": "家庭B", "家庭A": "家庭A", "家庭B": "家庭B" })[traveler?.family] || "pending";
+  }
+
+  function billScope(bill) {
+    if (bill.familyScope) return bill.familyScope;
+    const families = bill.participantIds.map((id) => familyFor(travelerById(id)));
+    if (!families.length || families.includes("pending")) return "pending";
+    return new Set(families).size === 1 ? families[0] : "shared";
+  }
+
+  function billPaid(bill) { return (bill.paymentStatus || "paid") === "paid"; }
+  function settlementBills() {
+    return ledgerData.bills.filter((bill) => billPaid(bill) && bill.includeInStatistics !== false && travelerById(bill.payerId) && bill.participantIds.length);
+  }
+  function inFamilyView(bill) {
+    return familyFilter === "all" || billScope(bill) === familyFilter || billScope(bill) === "shared";
+  }
+  function viewAmount(bill) {
+    if (familyFilter === "all" || billScope(bill) === familyFilter) return bill.baseAmountCents;
+    if (billScope(bill) !== "shared" || !bill.participantIds.length || bill.participantIds.some((id) => familyFor(travelerById(id)) === "pending")) return null;
+    return [...billShares(bill)].reduce((sum, [id, amount]) => sum + (familyFor(travelerById(id)) === familyFilter ? amount : 0), 0);
+  }
+  function viewTotal(bills) { return bills.reduce((sum, bill) => sum + (viewAmount(bill) || 0), 0); }
+
+  function viewSubtotal(bills) {
+    const total = formatMoney(viewTotal(bills), ledgerData.settings.baseCurrency);
+    return bills.some((bill) => viewAmount(bill) === null) ? `待分配（已确认小计 ${total}）` : total;
+  }
+
+  function renderFinancialSummary() {
+    const currency = ledgerData.settings.baseCurrency;
+    const visible = ledgerData.bills.filter(inFamilyView).filter((bill) => bill.includeInStatistics !== false);
+    const paid = visible.filter(billPaid);
+    const estimated = visible.filter((bill) => bill.paymentStatus === "estimated");
+    const unpaid = visible.filter((bill) => bill.paymentStatus === "unpaid");
+    const mandatory = plannedCosts.filter((item) => !item.optional);
+    const optional = plannedCosts.filter((item) => item.optional);
+    const sum = (items) => items.reduce((total, item) => total + (Number.isSafeInteger(item.totalCents) ? item.totalCents : 0), 0);
+    const stats = calculateStats();
+    const transfers = stats.transfers.filter((transfer) => familyFilter === "all" || familyFor(travelerById(transfer.fromId)) === familyFilter || familyFor(travelerById(transfer.toId)) === familyFilter);
+    const unresolved = visible.filter((bill) => !travelerById(bill.payerId) || !bill.participantIds.length || viewAmount(bill) === null).length;
+    const pendingScopes = ledgerData.bills.filter((bill) => billScope(bill) === "pending").length;
+    const money = (amount) => escapeHtml(formatMoney(amount, currency));
+    return `<section class="ledger-list-section" aria-label="费用状态与家庭筛选">
+      <div class="ledger-family-filters" role="group" aria-label="家庭筛选">${[["all","全部"],["家庭A","家庭A"],["家庭B","家庭B"]].map(([value,label]) => `<button class="ledger-text-button" type="button" data-ledger-action="filter-family" data-ledger-family="${value}" aria-pressed="${familyFilter === value}">${label}</button>`).join("")}</div>
+      <p class="ledger-field-help">筛选仅影响展示与汇总，不修改账目。家庭视图按明确归属或已确认参与人的份额汇总，共同费用不按家庭数量强行均分；分摊不明的金额不作为0元。</p>
+      <dl class="ledger-finance-metrics">
+        <div><dt>行程预算已知金额（不含可选／未知）</dt><dd>${familyFilter === "all" ? `CNY ${(sum(mandatory)/100).toFixed(2)}` : "待分配"}</dd></div>
+        <div><dt>预计费用（用户另记）</dt><dd>${escapeHtml(viewSubtotal(estimated))}</dd></div>
+        <div><dt>已支付费用${familyFilter === "all" ? "" : "（归属／分摊）"}</dt><dd>${escapeHtml(viewSubtotal(paid))}</dd></div>
+        <div><dt>尚未支付（用户另记）</dt><dd>${escapeHtml(viewSubtotal(unpaid))}</dd></div>
+        <div><dt>待结算转账（全局结算中与筛选有关）</dt><dd>${money(transfers.reduce((total,item) => total+item.amountCents,0))}</dd></div>
+      </dl>
+      <p class="ledger-field-help">家庭归属待分配 ${pendingScopes} 笔；当前视图付款人／分摊待确认 ${unresolved} 笔。所有金额按CNY手动换算后记录，以下行程预算为CNY，与用户账单独立，不合并重复统计。</p>
+      <details><summary>行程预计费用（未生成付款流水）</summary>
+        <p class="ledger-field-help">${familyFilter === "all" ? `已知非可选预算 CNY ${(sum(mandatory)/100).toFixed(2)}；可选另计 CNY ${(sum(optional)/100).toFixed(2)}；另有 ${plannedCosts.filter((item) => item.totalCents === null).length} 项未知金额未计入。` : "行程预算的家庭归属尚未分配，不推算本家庭预算。"} 玉龙雪山官方票、环保车与返昆车票等未知费用需另行确认。</p>
+        <ul class="ledger-planning-costs">${(familyFilter === "all" ? plannedCosts : plannedCosts.filter((item) => item.familyScope === familyFilter)).map((item) => `<li>${escapeHtml(item.date)} · ${escapeHtml(item.name)}${item.optional ? "（可选）" : ""} · ${Number.isSafeInteger(item.totalCents) ? `CNY ${(item.totalCents/100).toFixed(2)}` : "金额待确认"} · 待分配；${escapeHtml(item.note || "")}</li>`).join("")}</ul>
+      </details>
+      <details><summary>已支付但不计当前账单统计的机票</summary><ul>${externalPaidItems.filter((item) => familyFilter === "all" || item.familyScope === familyFilter).map((item) => `<li>${escapeHtml(item.familyScope)} · ${escapeHtml(item.name)} · CNY ${(item.amountCents/100).toFixed(2)} · 已支付／不计统计；${escapeHtml(item.note || "")}</li>`).join("")}</ul></details>
+    </section>`;
+  }
+
+  function calculateStats(bills = settlementBills()) {
     const members = ledgerData.travelers.map((traveler) => ({
       traveler,
       paidCents: 0,
@@ -541,7 +610,7 @@
       billIds: []
     }));
     const byId = new Map(members.map((entry) => [entry.traveler.id, entry]));
-    ledgerData.bills.forEach((bill) => {
+    bills.forEach((bill) => {
       const payer = byId.get(bill.payerId);
       if (payer) {
         payer.paidCents += bill.baseAmountCents;
@@ -605,7 +674,7 @@
       amountCents: transfer.amountCents
     }));
     return {
-      totalCents: ledgerData.bills.reduce((sum, bill) => sum + bill.baseAmountCents, 0),
+      totalCents: bills.reduce((sum, bill) => sum + bill.baseAmountCents, 0),
       members,
       transfers
     };
@@ -644,10 +713,12 @@
     const selectedParticipants = new Set(
       editingBill?.participantIds
       || draft?.participantIds
-      || ledgerData.travelers.map((traveler) => traveler.id)
+      || []
     );
     const selectedPayerId = editingBill?.payerId || draft?.payerId || "";
     const selectedCategory = editingBill?.category || draft?.category || "餐饮";
+    const paymentStatus = editingBill?.paymentStatus || (editingBill ? "paid" : draft?.paymentStatus || "estimated");
+    const familyScope = editingBill ? billScope(editingBill) : draft?.familyScope || "pending";
     return `
       <section class="ledger-entry-card" aria-labelledby="ledger-bill-form-title">
         <div class="ledger-section-heading">
@@ -684,6 +755,9 @@
               <small class="ledger-field-help">按付款当时采用的汇率手动填写</small>
             </label>
 
+            <label class="ledger-field">付款状态<select class="ledger-input" name="paymentStatus">${[["estimated","预计费用"],["paid","已支付"],["unpaid","尚未支付"]].map(([value,label]) => `<option value="${value}" ${paymentStatus === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+            <label class="ledger-field">费用归属<select class="ledger-input" name="familyScope">${[["pending","待分配"],["shared","共同费用"],["家庭A","家庭A独立费用"],["家庭B","家庭B独立费用"]].map(([value,label]) => `<option value="${value}" ${familyScope === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+            <p class="ledger-field-help">付款人、参与人可暂不指定并保留待分配；只有已支付且付款人和分摊人明确的账目进入结算。未主动选择参与人时不会均分。</p>
             <fieldset class="ledger-fieldset">
               <legend class="ledger-field-label">分类</legend>
               <div class="ledger-category-grid">
@@ -853,6 +927,8 @@
             <span class="ledger-category-mark" data-ledger-category="${escapeAttribute(bill.category)}" aria-hidden="true"></span>
             <div>
               <h3>${escapeHtml(bill.category)}</h3>
+              <p class="ledger-field-help">${({paid:"已支付",estimated:"预计费用",unpaid:"尚未支付"})[bill.paymentStatus || "paid"]} · ${escapeHtml(({shared:"共同费用",pending:"待分配"})[billScope(bill)] || billScope(bill))}${(!payer || !participants.length) ? " · 付款／分摊待确认" : ""}${bill.includeInStatistics === false ? " · 不计统计" : ""}</p>
+              ${familyFilter !== "all" ? `<p class="ledger-field-help">本家庭归属／分摊：${viewAmount(bill) === null ? "待分配" : escapeHtml(formatMoney(viewAmount(bill),baseCurrency))}；右侧为整笔账单金额</p>` : ""}
               ${renderBillNoteControl(bill)}
               ${bill.orderedAt ? `<p class="ledger-bill-date">${escapeHtml(formatBillDate(bill.orderedAt))}</p>` : ""}
             </div>
@@ -866,7 +942,7 @@
           <div class="ledger-bill-payer">
             <span>买单</span>
             ${renderAvatar(payer, "small")}
-            <b>${escapeHtml(payer?.name || "")}</b>
+            <b>${escapeHtml(payer?.name || "待确认")}</b>
           </div>
           <div class="ledger-bill-participants" aria-label="参与分账：${escapeAttribute(participants.map((person) => person.name).join("、"))}">
             <span>分账</span>
@@ -883,8 +959,8 @@
 
   function renderBillList() {
     const baseCurrency = ledgerData.settings.baseCurrency;
-    const totalCents = ledgerData.bills.reduce((sum, bill) => sum + bill.baseAmountCents, 0);
-    const bills = [...ledgerData.bills].sort((first, second) => {
+    const totalCents = viewTotal(ledgerData.bills.filter(inFamilyView).filter((bill) => billPaid(bill) && bill.includeInStatistics !== false));
+    const bills = ledgerData.bills.filter(inFamilyView).slice().sort((first, second) => {
       const firstDate = first.orderedAt || first.createdAt;
       const secondDate = second.orderedAt || second.createdAt;
       return secondDate.localeCompare(firstDate);
@@ -897,7 +973,7 @@
             <h2 id="ledger-list-title">${bills.length ? `${bills.length} 笔账单` : "还没有账单"}</h2>
           </div>
           <div class="ledger-list-total">
-            <span>总支出</span>
+            <span>已支付归属／分摊合计</span>
             <strong>${escapeHtml(formatMoney(totalCents, baseCurrency))}</strong>
           </div>
         </div>
@@ -940,14 +1016,20 @@
   }
 
   function renderStatsPage() {
-    const stats = calculateStats();
+    const globalStats = calculateStats();
+    const stats = familyFilter === "all" ? globalStats : {
+      ...globalStats,
+      totalCents: globalStats.members.filter((member) => familyFor(member.traveler) === familyFilter).reduce((sum,member) => sum+member.owedCents,0),
+      members: globalStats.members.filter((member) => familyFor(member.traveler) === familyFilter),
+      transfers: globalStats.transfers.filter((transfer) => familyFor(travelerById(transfer.fromId)) === familyFilter || familyFor(travelerById(transfer.toId)) === familyFilter)
+    };
     const baseCurrency = ledgerData.settings.baseCurrency;
     return `
       <section class="ledger-tab-panel" data-ledger-panel="stats" role="tabpanel" aria-labelledby="ledger-stats-tab" ${activeTab === "stats" ? "" : "hidden"}>
         <section class="ledger-stats-overview" aria-labelledby="ledger-stats-title">
           <p class="ledger-section-kicker">账单结算</p>
           <h2 id="ledger-stats-title">${escapeHtml(formatMoney(stats.totalCents, baseCurrency))}</h2>
-          <span>${ledgerData.bills.length} 笔账单 · 以 ${escapeHtml(baseCurrency)} 结算</span>
+          <span>${settlementBills().length} 笔全局有效已支付账单 · 以 ${escapeHtml(baseCurrency)} 结算</span>
         </section>
 
         <section class="ledger-settlement-section" aria-labelledby="ledger-settlement-title">
@@ -973,7 +1055,7 @@
                   </div>`;
               }).join("")}
             </div>` : `
-            <div class="ledger-empty-state"><p>${ledgerData.bills.length ? "大家已经结清，无需转账。" : "添加账单后，这里会自动生成结算单。"}</p></div>`}
+            <div class="ledger-empty-state"><p>${ledgerData.bills.length ? "当前没有可展示的转账；付款或分摊待确认的账目仍待分配，不代表已结清。" : "添加账单后，这里会自动生成结算单。"}</p></div>`}
         </section>
 
         <section class="ledger-member-stats-section" aria-labelledby="ledger-member-stats-title">
@@ -995,7 +1077,7 @@
                     <dl class="ledger-member-metrics">
                       <div><dt>实际支付</dt><dd>${escapeHtml(formatMoney(member.paidCents, baseCurrency))}</dd></div>
                       <div><dt>个人应分摊</dt><dd>${escapeHtml(formatMoney(member.owedCents, baseCurrency))}</dd></div>
-                      <div><dt>结算结果</dt><dd class="${member.netCents > 0 ? "ledger-positive" : member.netCents < 0 ? "ledger-negative" : "ledger-neutral"}">${member.netCents > 0 ? "应收 " : member.netCents < 0 ? "应付 " : "已结清 "}${member.netCents === 0 ? "" : escapeHtml(formatMoney(Math.abs(member.netCents), baseCurrency))}</dd></div>
+                      <div><dt>结算结果</dt><dd class="${member.netCents > 0 ? "ledger-positive" : member.netCents < 0 ? "ledger-negative" : "ledger-neutral"}">${member.netCents > 0 ? "应收 " : member.netCents < 0 ? "应付 " : "已计账目净额为0 "}${member.netCents === 0 ? "" : escapeHtml(formatMoney(Math.abs(member.netCents), baseCurrency))}</dd></div>
                     </dl>
                     <div class="ledger-member-bills">${renderRelatedBills(member)}</div>
                   </div>
@@ -1187,6 +1269,7 @@
           <button id="ledger-stats-tab" class="ledger-tab ${activeTab === "stats" ? "ledger-is-active" : ""}" type="button" role="tab" aria-selected="${activeTab === "stats"}" data-ledger-action="set-tab" data-ledger-tab="stats">账单结算</button>
         </nav>
         <div class="ledger-live" role="status" aria-live="polite">${escapeHtml(notice)}</div>
+        ${renderFinancialSummary()}
         ${renderEntryPage()}
         ${renderStatsPage()}
         ${renderMembersDialog()}
@@ -1269,6 +1352,8 @@
       category: String(formData.get("category") || "餐饮"),
       note: String(formData.get("note") || "").trim().slice(0, 160),
       orderedAt: String(formData.get("orderedAt") || ""),
+      paymentStatus: String(formData.get("paymentStatus") || "estimated"),
+      familyScope: String(formData.get("familyScope") || "pending"),
       payerId: String(formData.get("payerId") || ""),
       participantIds: formData.getAll("participantIds").map(String)
     };
@@ -1281,7 +1366,7 @@
     if (!form || !summary) return;
     const participants = [...form.querySelectorAll('input[name="participantIds"]:checked')];
     if (!participants.length) {
-      summary.textContent = "请选择至少一位分账人";
+      summary.textContent = "分摊人待分配；不会自动均分或生成结算";
       return;
     }
     const currency = form.elements.currency?.value || ledgerData.settings.baseCurrency;
@@ -1431,17 +1516,14 @@
       setFormError(form, "请选择账单分类。");
       return;
     }
-    if (!travelerById(payerId)) {
-      setFormError(form, "请选择一位买单人。");
-      return;
-    }
-    if (!participantIds.length) {
-      setFormError(form, "请选择至少一位参与分账的人。");
-      return;
-    }
+    const paymentStatus = String(formData.get("paymentStatus") || "estimated");
+    const familyScope = String(formData.get("familyScope") || "pending");
+    if (!["paid","estimated","unpaid"].includes(paymentStatus) || !["pending","shared","家庭A","家庭B"].includes(familyScope)) { setFormError(form, "请选择有效的付款状态和费用归属。"); return; }
 
     const now = new Date().toISOString();
     const fields = {
+      paymentStatus,
+      familyScope,
       originalAmountCents,
       baseAmountCents,
       currency,
@@ -1720,7 +1802,11 @@
   function handleAction(button) {
     const action = button.dataset.ledgerAction;
     if (!action) return;
-    if (action === "set-tab") {
+    if (action === "filter-family") {
+      captureBillDraft();
+      familyFilter = ["家庭A","家庭B"].includes(button.dataset.ledgerFamily) ? button.dataset.ledgerFamily : "all";
+      renderApp();
+    } else if (action === "set-tab") {
       captureBillDraft();
       setActiveTab(button.dataset.ledgerTab);
     } else if (action === "open-members") {
@@ -1765,7 +1851,7 @@
       renderApp();
     } else if (action === "select-family") {
       const group = button.dataset.ledgerFamily;
-      const ids = new Set(ledgerData.travelers.filter((traveler) => traveler.family === group).map((traveler) => traveler.id));
+      const ids = new Set(ledgerData.travelers.filter((traveler) => familyFor(traveler) === group).map((traveler) => traveler.id));
       if (!ids.size) { setNotice("请先在成员管理中确认家庭归属。"); return; }
       button.closest("form").querySelectorAll('input[name="participantIds"]').forEach((input) => { input.checked = ids.has(input.value); });
       captureBillDraft();
@@ -1884,6 +1970,8 @@
       : persistence.mode;
     familyGroups = [...new Set((Array.isArray(options.familyGroups) ? options.familyGroups : []).map((name) => String(name).trim().slice(0, 30)).filter(Boolean))];
     budgetSummary = String(options.budgetSummary || "");
+    plannedCosts = Array.isArray(options.plannedCosts) ? options.plannedCosts : [];
+    externalPaidItems = Array.isArray(options.externalPaidItems) ? options.externalPaidItems : [];
     let loadSucceeded = false;
     let stored = null;
     try {

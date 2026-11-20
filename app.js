@@ -445,6 +445,23 @@ function inlineTicketMarkup(ticket) {
     </div>`;
 }
 
+function planningCostText(item) {
+  return Number.isSafeInteger(item.totalCents) ? `六人／订单预计 ¥${(item.totalCents / 100).toFixed(2)}` : "金额待确认（未按0元计算）";
+}
+
+function dayPlanningCosts(day) {
+  const items = (state.data.planningCosts?.items || []).filter((item) => item.date === day.date);
+  if (!items.length) return "";
+  return `<details class="prep-info"><summary>预计费用 · 不代表已支付</summary><ul>${items.map((item) => `<li>${escapeHtml(item.name)}${item.optional ? "（可选，不计必选合计）" : ""}：${item.unitPrice !== null ? `参考 ¥${escapeHtml(item.unitPrice)}/人；` : ""}${planningCostText(item)}${item.note ? `。${escapeHtml(item.note)}` : ""}</li>`).join("")}</ul></details>`;
+}
+
+function renderRailPlans() {
+  const target = $("#rail-plans");
+  if (!target) return;
+  const rails = state.data.groundTransport?.publicTransitAndRail || [];
+  target.innerHTML = `<details class="prep-info"><summary>铁路计划与预计交通费用</summary><p class="prep-note">所有未购车票只记预计费用。2027实际车次、时刻、票价及义乌站内换乘间隔均待12306确认。</p><ul>${rails.map((item) => `<li>${escapeHtml(item.date)} · ${escapeHtml(item.route)} · ${escapeHtml(item.train || "车次待确认")} · ${escapeHtml(item.departure || "出发待确认")}—${escapeHtml(item.arrival || "到达待确认")} · ${item.pricePerPerson == null ? "票价待确认" : `参考 ¥${escapeHtml(item.pricePerPerson)}/人，六人预计 ¥${escapeHtml(item.estimatedTotal)}`} · 未购买</li>`).join("")}</ul></details>`;
+}
+
 function dayCard(day) {
   const today = todayForTrip();
   const isToday = day.date === today;
@@ -488,6 +505,7 @@ function dayCard(day) {
       <div class="day-detail" id="day-detail-${day.day}" ${expanded ? "" : "hidden"}>
         ${(state.data.preTrip?.dailyReminders?.[day.date] || []).length ? `<details class="prep-info daily-health"><summary>高原与天气提醒</summary><ul>${state.data.preTrip.dailyReminders[day.date].map((text) => `<li>${escapeHtml(text)}</li>`).join("")}</ul></details>` : ""}
         <ol class="schedule">${schedule}</ol>
+        ${dayPlanningCosts(day)}
         ${foodSection(day)}
         ${costs ? `<div class="costs">${costs}</div>` : ""}
         ${notes.map((note) => `<p class="detail-note">${escapeHtml(note)}</p>`).join("")}
@@ -639,6 +657,7 @@ function changeFoodStatus(button) {
 
 function renderTimeline() {
   loadFoodState();
+  renderRailPlans();
   const today = currentTripDay();
   state.expandedDay = today;
   $("#day-count").textContent = `${state.data.days.length} DAYS`;
@@ -904,6 +923,21 @@ function todoCategories() {
   return [...new Set([...(state.data.preTrip?.categories || ["原有待办"]), ...state.todos.map((todo) => todo.category || "原有待办")])];
 }
 
+function purchaseFields(todo, editing = false) {
+  const p = todo.purchase;
+  if (!p) return "";
+  if (!editing) return `<details class="purchase-detail"><summary>购票计划 · ${escapeHtml(p.planDate || "日期待核实")} · ${{pending:"待购买／办理",purchased:"已购买／办理",cancelled:"已取消"}[p.status] || "待确认"}</summary><p class="prep-note">计划日期 ${escapeHtml(p.planDate || "待核实")} ${escapeHtml(p.planTime || "")}；票种 ${escapeHtml(p.ticketType || "待确认")}；人数 ${escapeHtml(p.people ?? "待确认")}；参考价 ${p.pricePerPerson == null ? "待确认" : `¥${escapeHtml(p.pricePerPerson)}/人`}；${escapeHtml(p.note || "")}</p></details>`;
+  return `<div class="purchase-editor">
+    <label>计划日期<input class="prep-input" type="date" name="planDate" value="${escapeHtml(p.planDate || "")}"></label>
+    <label>计划查看时间<input class="prep-input" type="time" name="planTime" value="${escapeHtml(p.planTime || "")}"></label>
+    <label>票种<input class="prep-input" name="ticketType" value="${escapeHtml(p.ticketType || "")}"></label>
+    <label>人数<input class="prep-input" name="people" type="number" min="1" step="1" value="${p.people == null ? "" : escapeHtml(p.people)}"></label>
+    <label>参考单价（元）<input class="prep-input" name="pricePerPerson" type="number" min="0" step="0.01" value="${p.pricePerPerson == null ? "" : escapeHtml(p.pricePerPerson)}"></label>
+    <label>购买状态<select name="purchaseStatus">${todoOptions([["pending","待购买／办理"],["purchased","已购买／办理"],["cancelled","已取消"]], p.status || "pending")}</select></label>
+    <label>备注<textarea class="prep-input" name="purchaseNote">${escapeHtml(p.note || "")}</textarea></label>
+  </div>`;
+}
+
 function todoRow(todo) {
   const editing = state.editingTodoId === todo.id;
   return `<div class="todo-item${todo.completed ? " is-complete" : ""}" data-todo-id="${escapeHtml(todo.id)}">
@@ -911,9 +945,11 @@ function todoRow(todo) {
       <input class="prep-input" name="text" aria-label="编辑物品名称" maxlength="120" value="${escapeHtml(todo.text)}">
       <select name="category" aria-label="编辑类别">${todoOptions(todoCategories().map((c) => [c,c]), todo.category || "原有待办")}</select>
       <select name="scope" aria-label="编辑归属">${todoOptions([["personal","个人物品（每人准备）"],["shared","六人共同"]], todo.scope || "shared")}</select>
+      ${purchaseFields(todo, true)}
       <button type="button" data-prep-action="save">保存</button><button type="button" data-prep-action="cancel">取消</button>
     </div>` : `<label><input type="checkbox" ${todo.completed ? "checked" : ""} aria-label="完成：${escapeHtml(todo.text)}"><span class="todo-check" aria-hidden="true">✓</span><span class="todo-text">${escapeHtml(todo.text)} <small class="prep-scope">${todo.scope === "personal" ? "个人 · 每人准备" : "六人共同"}</small></span></label>
     <div class="todo-actions"><button type="button" data-prep-action="edit" aria-label="编辑：${escapeHtml(todo.text)}">编辑</button><button type="button" class="todo-delete" data-prep-action="delete" aria-label="删除：${escapeHtml(todo.text)}">删除</button></div>`}
+    ${editing ? "" : purchaseFields(todo)}
   </div>`;
 }
 
@@ -966,7 +1002,7 @@ function renderTravelPrep() {
     if (state.todos.some((todo) => !todo.deleted && todo.text === text)) { $("#prep-save-status").textContent = "清单中已有同名事项。"; return; }
     const button = $("button[type=submit]", event.currentTarget);
     button.disabled = true;
-    if (await commitTodo({ id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, category: $("#todo-category").value, scope: $("#todo-scope").value, completed: false })) input.value = "";
+    if (await commitTodo({ id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, category: $("#todo-category").value, scope: $("#todo-scope").value, completed: false, ...($("#todo-category").value === "提前购票" ? { purchase: { planDate: null, planTime: null, ticketType: "", people: null, pricePerPerson: null, status: "pending", note: "" } } : {}) })) input.value = "";
     button.disabled = false;
   };
   $("#todo-list").onchange = async (event) => {
@@ -989,7 +1025,16 @@ function renderTravelPrep() {
       const text = $("[name=text]", row).value.trim();
       if (!text) return;
       button.disabled = true;
-      await commitTodo({ ...todo, text, category: $("[name=category]", row).value, scope: $("[name=scope]", row).value });
+      let purchase = todo.purchase;
+      if (purchase) {
+        const peopleValue = $("[name=people]", row).value;
+        const priceValue = $("[name=pricePerPerson]", row).value;
+        if ((peopleValue && (!Number.isInteger(Number(peopleValue)) || Number(peopleValue) < 1)) || (priceValue && (!Number.isFinite(Number(priceValue)) || Number(priceValue) < 0))) {
+          button.disabled = false; $("#prep-save-status").textContent = "请填写有效人数和价格。"; return;
+        }
+        purchase = { ...purchase, planDate: $("[name=planDate]", row).value || null, planTime: $("[name=planTime]", row).value || null, ticketType: $("[name=ticketType]", row).value.trim(), people: peopleValue ? Number(peopleValue) : null, pricePerPerson: priceValue ? Number(priceValue) : null, status: $("[name=purchaseStatus]", row).value, note: $("[name=purchaseNote]", row).value.trim() };
+      }
+      await commitTodo({ ...todo, text, category: $("[name=category]", row).value, scope: $("[name=scope]", row).value, ...(purchase ? { purchase } : $("[name=category]", row).value === "提前购票" ? { purchase: { planDate: null, planTime: null, ticketType: "", people: null, pricePerPerson: null, status: "pending", note: "" } } : {}) });
     }
   };
 }
@@ -1158,7 +1203,7 @@ async function init() {
     if (moduleEnabled("driving")) renderRental();
     if (moduleEnabled("todo")) renderTravelPrep();
     if (moduleEnabled("ledger")) {
-      await window.TravelLedger?.init?.({ tripId: state.data.metadata.tripId, config: state.config, initialTravelers: state.data.ledger?.initialTravelers, familyGroups: state.data.ledger?.familyGroups, budgetSummary: state.data.ledger?.budgetSummary });
+      await window.TravelLedger?.init?.({ tripId: state.data.metadata.tripId, config: state.config, initialTravelers: state.data.ledger?.initialTravelers, familyGroups: state.data.ledger?.familyGroups, budgetSummary: state.data.ledger?.budgetSummary, plannedCosts: state.data.planningCosts?.items, externalPaidItems: state.data.ledger?.externalPaidItems });
     }
     startCountdowns();
   } catch (error) {
