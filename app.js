@@ -446,13 +446,13 @@ function inlineTicketMarkup(ticket) {
 }
 
 function planningCostText(item) {
-  return Number.isSafeInteger(item.totalCents) ? `六人／订单预计 ¥${(item.totalCents / 100).toFixed(2)}` : "金额待确认（未按0元计算）";
+  return Number.isSafeInteger(item.totalCents) ? `${item.paymentStatus === "paid" ? "订单已支付" : "六人／订单预计"} ¥${(item.totalCents / 100).toFixed(2)}` : "金额待确认（未按0元计算）";
 }
 
 function dayPlanningCosts(day) {
   const items = (state.data.planningCosts?.items || []).filter((item) => item.date === day.date);
   if (!items.length) return "";
-  return `<details class="prep-info"><summary>预计费用 · 不代表已支付</summary><ul>${items.map((item) => `<li>${escapeHtml(item.name)}${item.optional ? "（可选，不计必选合计）" : ""}：${item.unitPrice !== null ? `参考 ¥${escapeHtml(item.unitPrice)}/人；` : ""}${planningCostText(item)}${item.note ? `。${escapeHtml(item.note)}` : ""}</li>`).join("")}</ul></details>`;
+  return `<details class="prep-info"><summary>费用参考 · 区分预计与已支付</summary><ul>${items.map((item) => `<li>${escapeHtml(item.name)}${item.optional ? "（可选，不计必选合计）" : ""}：${item.unitPrice !== null ? `参考 ¥${escapeHtml(item.unitPrice)}/人；` : ""}${planningCostText(item)}${item.note ? `。${escapeHtml(item.note)}` : ""}</li>`).join("")}</ul></details>`;
 }
 
 function renderRailPlans() {
@@ -896,6 +896,12 @@ async function loadSharedState() {
       const current = state.todos[index];
       if (!current || current.deleted || !revision.previousTexts?.includes(current.text)) continue;
       const updated = { ...current, text: revision.text };
+      if (current.purchase && revision.purchaseUpdates) {
+        updated.purchase = { ...current.purchase };
+        for (const [field, change] of Object.entries(revision.purchaseUpdates)) {
+          if (change.previousValues?.some((value) => value === current.purchase[field])) updated.purchase[field] = change.value;
+        }
+      }
       await todoAdapter.applyChange("todos", updated, "upsert");
       state.todos[index] = updated;
     }

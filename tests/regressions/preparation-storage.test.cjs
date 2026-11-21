@@ -36,3 +36,10 @@ test('authored todo corrections preserve completion and user customizations', as
  const removed=await load([{id:'legacy',text:'Old text',deleted:true}],[],true,revision);
  assert.equal(removed.todos[0].deleted,true);assert.equal(removed.todos[0].text,'Old text');
 });
+
+test('purchase corrections fill old defaults without overwriting paid status or user edits',async()=>{
+ const revision=[{id:'train-test',previousTexts:['Old train task'],text:'New train task',purchaseUpdates:{pricePerPerson:{previousValues:[null],value:260},note:{previousValues:['Old note'],value:'New note'}}}];
+ const raw={id:'train-test',text:'Old train task',completed:true,purchase:{pricePerPerson:null,note:'Old note',status:'purchased'}};
+ const migrated=await load([raw],[],true,revision);assert.equal(migrated.todos[0].purchase.pricePerPerson,260);assert.equal(migrated.todos[0].purchase.note,'New note');assert.equal(migrated.todos[0].purchase.status,'purchased');assert.equal(migrated.todos[0].completed,true);
+ const edited=await load([{...raw,purchase:{pricePerPerson:300,note:'User note',status:'purchased'}}],[],true,revision);assert.equal(edited.todos[0].purchase.pricePerPerson,300);assert.equal(edited.todos[0].purchase.note,'User note');
+});

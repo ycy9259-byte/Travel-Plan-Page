@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const fs=require('node:fs');
 const path=require('node:path');
 function fixture() {
- const source=fs.readFileSync(path.join(__dirname,'../../ledger.js'),'utf8').replace('  const publicApi = {',`  globalThis.ledgerTest = { normalizeData, calculateStats, billScope, viewAmount, viewTotal, settlementBills, familyFor, setData(raw) { ledgerData = normalizeData(raw); }, setFilter(value) { familyFilter = value; }, snapshot() { return JSON.parse(JSON.stringify(ledgerData)); } };\n  const publicApi = {`);
+ const source=fs.readFileSync(path.join(__dirname,'../../ledger.js'),'utf8').replace('  const publicApi = {',`  globalThis.ledgerTest = { normalizeData, calculateStats, renderFinancialSummary, setPlanning(items) { plannedCosts = items; }, billScope, viewAmount, viewTotal, settlementBills, familyFor, setData(raw) { ledgerData = normalizeData(raw); }, setFilter(value) { familyFilter = value; }, snapshot() { return JSON.parse(JSON.stringify(ledgerData)); } };\n  const publicApi = {`);
  const ctx=vm.createContext({console});vm.runInContext(source,ctx);return ctx.ledgerTest;
 }
 function bill(id,amount,extra={}) { return {id,originalAmountCents:amount,baseAmountCents:amount,currency:'CNY',category:'其他',payerId:'a',participantIds:['a','b'],...extra}; }
@@ -20,4 +20,8 @@ test('family filtering is read-only and shared expense is not counted twice',()=
 });
 test('unknown family members are never automatically split between households',()=>{
  const f=fixture();const raw=data([bill('shared',10000,{familyScope:'shared'})]);raw.travelers[1].family='';f.setData(raw);f.setFilter('家庭A');assert.equal(f.viewAmount(f.snapshot().bills[0]),null);f.setFilter('all');assert.equal(f.viewAmount(f.snapshot().bills[0]),10000);
+});
+
+test('paid hotel orders are shown separately and never reimported into manual bills',()=>{
+ const f=fixture();f.setData(data([]));f.setPlanning([{name:'Test paid hotel',paymentStatus:'paid',totalCents:506990,category:'住宿',optional:false,familyScope:'pending',date:'2000-01-01'},{name:'Test estimated rail',paymentStatus:'estimated',totalCents:1000,optional:false,familyScope:'pending',date:'2000-01-02'}]);const markup=f.renderFinancialSummary();assert(markup.includes('CNY 10.00'));assert(markup.includes('CNY 5069.90'));assert.equal(f.snapshot().bills.length,0);assert.equal(f.calculateStats().totalCents,0);
 });

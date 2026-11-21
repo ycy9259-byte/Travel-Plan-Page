@@ -574,8 +574,10 @@
     const paid = visible.filter(billPaid);
     const estimated = visible.filter((bill) => bill.paymentStatus === "estimated");
     const unpaid = visible.filter((bill) => bill.paymentStatus === "unpaid");
-    const mandatory = plannedCosts.filter((item) => !item.optional);
-    const optional = plannedCosts.filter((item) => item.optional);
+    const estimates = plannedCosts.filter((item) => item.paymentStatus !== "paid");
+    const confirmedPaidOrders = plannedCosts.filter((item) => item.paymentStatus === "paid");
+    const mandatory = estimates.filter((item) => !item.optional);
+    const optional = estimates.filter((item) => item.optional);
     const sum = (items) => items.reduce((total, item) => total + (Number.isSafeInteger(item.totalCents) ? item.totalCents : 0), 0);
     const stats = calculateStats();
     const transfers = stats.transfers.filter((transfer) => familyFilter === "all" || familyFor(travelerById(transfer.fromId)) === familyFilter || familyFor(travelerById(transfer.toId)) === familyFilter);
@@ -587,16 +589,18 @@
       <p class="ledger-field-help">筛选仅影响展示与汇总，不修改账目。家庭视图按明确归属或已确认参与人的份额汇总，共同费用不按家庭数量强行均分；分摊不明的金额不作为0元。</p>
       <dl class="ledger-finance-metrics">
         <div><dt>行程预算已知金额（不含可选／未知）</dt><dd>${familyFilter === "all" ? `CNY ${(sum(mandatory)/100).toFixed(2)}` : "待分配"}</dd></div>
+        <div><dt>已支付住宿订单（与手工账单不合并）</dt><dd>${familyFilter === "all" ? `CNY ${(sum(confirmedPaidOrders)/100).toFixed(2)}` : "待分配"}</dd></div>
         <div><dt>预计费用（用户另记）</dt><dd>${escapeHtml(viewSubtotal(estimated))}</dd></div>
-        <div><dt>已支付费用${familyFilter === "all" ? "" : "（归属／分摊）"}</dt><dd>${escapeHtml(viewSubtotal(paid))}</dd></div>
+        <div><dt>已支付费用（用户账单）${familyFilter === "all" ? "" : "（归属／分摊）"}</dt><dd>${escapeHtml(viewSubtotal(paid))}</dd></div>
         <div><dt>尚未支付（用户另记）</dt><dd>${escapeHtml(viewSubtotal(unpaid))}</dd></div>
         <div><dt>待结算转账（全局结算中与筛选有关）</dt><dd>${money(transfers.reduce((total,item) => total+item.amountCents,0))}</dd></div>
       </dl>
       <p class="ledger-field-help">家庭归属待分配 ${pendingScopes} 笔；当前视图付款人／分摊待确认 ${unresolved} 笔。所有金额按CNY手动换算后记录，以下行程预算为CNY，与用户账单独立，不合并重复统计。</p>
       <details><summary>行程预计费用（未生成付款流水）</summary>
-        <p class="ledger-field-help">${familyFilter === "all" ? `已知非可选预算 CNY ${(sum(mandatory)/100).toFixed(2)}；可选另计 CNY ${(sum(optional)/100).toFixed(2)}；另有 ${plannedCosts.filter((item) => item.totalCents === null).length} 项未知金额未计入。` : "行程预算的家庭归属尚未分配，不推算本家庭预算。"} 玉龙雪山官方票、环保车与返昆车票等未知费用需另行确认。</p>
-        <ul class="ledger-planning-costs">${(familyFilter === "all" ? plannedCosts : plannedCosts.filter((item) => item.familyScope === familyFilter)).map((item) => `<li>${escapeHtml(item.date)} · ${escapeHtml(item.name)}${item.optional ? "（可选）" : ""} · ${Number.isSafeInteger(item.totalCents) ? `CNY ${(item.totalCents/100).toFixed(2)}` : "金额待确认"} · 待分配；${escapeHtml(item.note || "")}</li>`).join("")}</ul>
+        <p class="ledger-field-help">${familyFilter === "all" ? `已知非可选预算 CNY ${(sum(mandatory)/100).toFixed(2)}；可选另计 CNY ${(sum(optional)/100).toFixed(2)}；另有 ${estimates.filter((item) => item.totalCents === null).length} 项未知金额未计入。` : "行程预算的家庭归属尚未分配，不推算本家庭预算。"} 行程表中标为待确认的费用需另行核实；已支付住宿订单已从本预算撤出。</p>
+        <ul class="ledger-planning-costs">${(familyFilter === "all" ? estimates : estimates.filter((item) => item.familyScope === familyFilter)).map((item) => `<li>${escapeHtml(item.date)} · ${escapeHtml(item.name)}${item.optional ? "（可选）" : ""} · ${Number.isSafeInteger(item.totalCents) ? `CNY ${(item.totalCents/100).toFixed(2)}` : "金额待确认"} · 待分配；${escapeHtml(item.note || "")}</li>`).join("")}</ul>
       </details>
+      <details><summary>已支付住宿订单（不重复导入手工账单）</summary><p class="ledger-field-help">以下订单已支付，不再计入预计费用。付款人和家庭归属待分配；若已在手工账单登记同一订单，请勿再次录入。此处与手工账单分别展示、不相加。</p><ul>${(familyFilter === "all" ? confirmedPaidOrders : confirmedPaidOrders.filter((item) => item.familyScope === familyFilter)).map((item) => `<li>${escapeHtml(item.name)} · CNY ${(item.totalCents/100).toFixed(2)} · 已支付，归属待分配</li>`).join("")}</ul></details>
       <details><summary>已支付但不计当前账单统计的机票</summary><ul>${externalPaidItems.filter((item) => familyFilter === "all" || item.familyScope === familyFilter).map((item) => `<li>${escapeHtml(item.familyScope)} · ${escapeHtml(item.name)} · CNY ${(item.amountCents/100).toFixed(2)} · 已支付／不计统计；${escapeHtml(item.note || "")}</li>`).join("")}</ul></details>
     </section>`;
   }
