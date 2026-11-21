@@ -246,7 +246,7 @@
   function defaultData() {
     return {
       version: STORAGE_VERSION,
-      settings: { ...deepClone(DEFAULT_SETTINGS), settlement: normalizeSettlement() },
+      settings: { ...deepClone(DEFAULT_SETTINGS), settlement: normalizeSettlement(), settledTransfers: [] },
       travelers: [],
       bills: [],
       updatedAt: new Date().toISOString()
@@ -327,6 +327,10 @@
       settings: {
         baseCurrency, commonCurrencies, lastCurrency,
         settlement: normalizeSettlement(raw.settings?.settlement),
+        settledTransfers: (Array.isArray(raw.settings?.settledTransfers) ? raw.settings.settledTransfers : []).filter((transfer) => (
+          transfer && typeof transfer.id === "string" && travelerIds.has(transfer.fromId) && travelerIds.has(transfer.toId) &&
+          transfer.fromId !== transfer.toId && Number.isSafeInteger(transfer.amountCents) && transfer.amountCents > 0
+        )),
         ...(raw.settings?.initialMembersInitialized ? { initialMembersInitialized: true } : {})
       },
       travelers,
@@ -765,6 +769,7 @@
 
   function settlementView(expenses) {
     const plan = ledgerData.settings.settlement;
+    const settledTransfers = ledgerData.settings.settledTransfers;
     const members = plan.names.map((name) => {
       const matches = ledgerData.travelers.filter((person) => person.name === name);
       return matches.length === 1 ? matches[0] : null;
@@ -784,7 +789,11 @@
     const shares = allocated.map(billShares);
     const rows = plan.names.slice(0, 2).map((name, index) => {
       const fromId = members[index]?.id;
-      const share = shares.reduce((sum, amounts) => sum + (amounts.get(fromId) || 0), 0);
+      const allocatedShare = shares.reduce((sum, amounts) => sum + (amounts.get(fromId) || 0), 0);
+      const alreadyTransferred = settledTransfers.reduce((sum, transfer) => sum + (
+        transfer.fromId === fromId && transfer.toId === recipient?.id ? transfer.amountCents : 0
+      ), 0);
+      const share = Math.max(0, allocatedShare - alreadyTransferred);
       return {
         name, fromId, toId: recipient?.id, share, paid: plan.paid[index],
         amount: allocated.length ? share : plan.amounts[index]
@@ -795,7 +804,10 @@
     // Keep designated reimbursements out of the suggestions for other bills.
     const reserved = rows.filter((row) => row.share > row.paid)
       .map((row) => ({ ...row, amountCents: row.share - row.paid }));
-    return { eligible, allocated, expenses: allocatedExpenses, bills, rows, stats: calculateStats(bills, payments, reserved) };
+    return {
+      eligible, allocated, expenses: allocatedExpenses, bills, rows, settledTransfers,
+      stats: calculateStats(bills, [...settledTransfers, ...payments], reserved)
+    };
   }
 
   function renderAvatar(traveler, size = "normal") {
@@ -1128,12 +1140,17 @@
     }).join("");
   }
 
-  function renderSettlement({ eligible, allocated, rows, stats }) {
+  function renderSettlement({ eligible, allocated, rows, settledTransfers, stats }) {
     const plan = ledgerData.settings.settlement;
     const baseCurrency = ledgerData.settings.baseCurrency;
     const isVisible = (fromId, toId) => familyFilter === "all" ||
       [fromId, toId].some((id) => familyFor(travelerById(id)) === familyFilter);
-    const suggestions = stats.transfers.filter(({ fromId, toId }) => isVisible(fromId, toId));
+    const transfers = [...settledTransfers, ...stats.transfers].filter(({ fromId, toId }) => isVisible(fromId, toId));
+    const visibleRows = rows.map((row, index) => ({ ...row, index })).filter((row) => {
+      if (!row.name || !plan.names[2] || !isVisible(row.fromId, row.toId)) return false;
+      if (row.amount || row.paid) return true;
+      return !allocated.length && !transfers.some((transfer) => transfer.fromId === row.fromId && transfer.toId === row.toId);
+    });
     const splitLabel = allocated.map((bill) => bill.title || bill.note || bill.category).join("、");
     const locked = plan.paid.some(Boolean);
     return `
@@ -1141,10 +1158,23 @@
         <div class="ledger-section-heading"><h2 id="ledger-settlement-title">转账结算</h2></div>
         ${splitLabel ? `<p class="ledger-field-help">两人均摊 · ${escapeHtml(splitLabel)}</p>` : ""}
         <div class="ledger-transfer-list">
-          ${rows.map((row, index) => {
-            if (!isVisible(row.fromId, row.toId)) return "";
-            const from = row.name || `转账人 ${index + 1}`;
-            const to = plan.names[2] || "收款人";
+          ${transfers.map(({ id, fromId, toId, amountCents }) => {
+            const from = travelerById(fromId).name;
+            const to = travelerById(toId).name;
+            return `<form class="ledger-transfer-row ledger-reimbursement" data-ledger-form="calculated-transfer"
+                data-transfer-id="${escapeAttribute(id || "")}" data-from-id="${escapeAttribute(fromId)}"
+                data-to-id="${escapeAttribute(toId)}" data-amount-cents="${amountCents}">
+              <strong>${escapeHtml(from)} → ${escapeHtml(to)}</strong>
+              <strong class="ledger-transfer-amount">${escapeHtml(formatMoney(amountCents, baseCurrency))}</strong>
+              <label class="ledger-transfer-check"><input type="checkbox" name="paid" ${id ? "checked" : ""}
+                  aria-label="${escapeAttribute(`${from} 转给 ${to} · ${id ? "已结清" : "已转账"}`)}">
+                ${id ? "已结清" : "已转账"}
+              </label>
+            </form>`;
+          }).join("")}
+          ${visibleRows.map((row) => {
+            const { name: from, index } = row;
+            const to = plan.names[2];
             const checked = row.paid > 0 && row.paid >= row.amount;
             const remaining = Math.max(0, row.amount - row.paid);
             return `<form class="ledger-transfer-row ledger-reimbursement" data-ledger-form="transfer" data-transfer-index="${index}">
@@ -1154,18 +1184,14 @@
                 : `<input class="ledger-input" name="amount" type="text" inputmode="decimal" autocomplete="off"
                     aria-label="${escapeAttribute(`${from} 的转账金额（${baseCurrency}）`)}" placeholder="金额待确认"
                     value="${escapeAttribute(transferDrafts[index] ?? (row.amount ? centsToInput(row.amount) : ""))}">`}
-              <label class="ledger-transfer-check"><input type="checkbox" name="paid" ${checked ? "checked" : ""} ${!row.name || !plan.names[2] ? "disabled" : ""}>
+              <label class="ledger-transfer-check"><input type="checkbox" name="paid" ${checked ? "checked" : ""}>
                 ${checked ? "已结清" : "已转账"}
               </label>
               ${row.paid && remaining ? `<small class="ledger-field-help">已转 ${escapeHtml(formatMoney(row.paid, baseCurrency))}，显示金额为剩余差额。</small>` : ""}
               <p class="ledger-form-error" data-ledger-form-error role="alert"></p>
             </form>`;
           }).join("")}
-          ${suggestions.map(({ fromId, toId, amountCents }) => `
-            <div class="ledger-transfer-row ledger-reimbursement">
-              <strong>${escapeHtml(travelerById(fromId)?.name)} → ${escapeHtml(travelerById(toId)?.name)}</strong>
-              <strong class="ledger-transfer-amount">${escapeHtml(formatMoney(amountCents, baseCurrency))}</strong>
-            </div>`).join("")}
+          ${!transfers.length && !visibleRows.length ? '<p class="ledger-field-help">当前没有转账记录。</p>' : ""}
         </div>
         <details class="ledger-settlement-settings">
           <summary>设置转账人和均摊账单</summary>
@@ -1186,6 +1212,7 @@
             <p class="ledger-field-help">${locked ? "取消相应的结清勾选后可修改设置。" : "在同行人中填写同名成员后，可用收款人垫付的账单计算两人均摊金额。"}</p>
             <p class="ledger-form-error" data-ledger-form-error role="alert"></p>
             <button class="ledger-text-button" type="submit" ${locked ? "disabled" : ""}>保存转账设置</button>
+            ${plan.names.some(Boolean) && !locked ? '<button class="ledger-text-button ledger-danger-button" type="button" data-ledger-action="clear-settlement">移除手动转账</button>' : ""}
           </form>
         </details>
         ${ledgerPersistenceMode === "local" ? '<p class="ledger-field-help">姓名、手记和结清状态保存在当前浏览器。</p>' : ""}
@@ -1304,7 +1331,8 @@
 
   function renderSettingsDialog() {
     const baseCurrency = currencyByCode(ledgerData.settings.baseCurrency);
-    const baseLocked = ledgerData.bills.length > 0 || recordedOrders.length > 0 || ledgerData.settings.settlement.paid.some(Boolean);
+    const baseLocked = ledgerData.bills.length > 0 || recordedOrders.length > 0 ||
+      ledgerData.settings.settlement.paid.some(Boolean) || ledgerData.settings.settledTransfers.length > 0;
     return `
       <dialog class="ledger-dialog ledger-settings-dialog" data-ledger-dialog="settings" aria-labelledby="ledger-settings-dialog-title">
         <div class="ledger-dialog-header">
@@ -1458,7 +1486,7 @@
   async function mutateData(mutator, options = {}) {
     return enqueueMutation(async () => {
       const next = deepClone(ledgerData);
-      mutator(next);
+      if (mutator(next) === false) return false;
       next.version = STORAGE_VERSION;
       next.updatedAt = new Date().toISOString();
       try {
@@ -1747,6 +1775,32 @@
     });
   }
 
+  async function updateCalculatedTransfer(form, checked) {
+    const { transferId, fromId, toId } = form.dataset;
+    const amountCents = Number(form.dataset.amountCents);
+    if (editingNoteBillId && !(await flushActiveBillNote())) return false;
+    return mutateData((next) => {
+      if (!checked) {
+        next.settings.settledTransfers = next.settings.settledTransfers.filter((transfer) => transfer.id !== transferId);
+        return;
+      }
+      const { stats } = settlementView(expenseList());
+      const current = stats.transfers.find((item) => item.fromId === fromId && item.toId === toId && item.amountCents === amountCents);
+      if (!current) {
+        setNotice("转账金额已更新，请核对后再勾选。");
+        return false;
+      }
+      next.settings.settledTransfers.push({ id: makeId("transfer"), ...current });
+    }, { message: checked ? "已记录转账" : "已取消结清" });
+  }
+
+  function clearSettlement() {
+    return mutateData((next) => {
+      if (next.settings.settlement.paid.some(Boolean)) return false;
+      next.settings.settlement = normalizeSettlement();
+    }, { message: "已移除手动转账", afterSuccess() { transferDrafts = [null, null]; } });
+  }
+
   async function applySettlementLink() {
     const prefix = "#ledger-setup?";
     if (ledgerPersistenceMode !== "local" || !location.hash.startsWith(prefix)) return;
@@ -1918,6 +1972,10 @@
   async function deleteMember(id) {
     const traveler = travelerById(id);
     if (!traveler) return;
+    if (ledgerData.settings.settledTransfers.some((transfer) => transfer.fromId === id || transfer.toId === id)) {
+      setNotice(`${traveler.name}已有结清记录，取消相应勾选后可移除。`);
+      return;
+    }
     const referenced = ledgerData.bills.some((bill) => (
       bill.payerId === id || bill.participantIds.includes(id)
     ));
@@ -1961,7 +2019,7 @@
     if (!CURRENCY_BY_CODE.has(code)) return;
     captureBillDraft();
     if (currencyPickerMode === "base") {
-      if (ledgerData.bills.length || recordedOrders.length || ledgerData.settings.settlement.paid.some(Boolean)) {
+      if (ledgerData.bills.length || recordedOrders.length || ledgerData.settings.settlement.paid.some(Boolean) || ledgerData.settings.settledTransfers.length) {
         setNotice("已有账单，本位币不能再修改。");
         return;
       }
@@ -2048,6 +2106,8 @@
       removeCommonCurrency(button.dataset.ledgerCode || "");
     } else if (action === "delete-member") {
       deleteMember(button.dataset.ledgerId || "");
+    } else if (action === "clear-settlement") {
+      void clearSettlement();
     } else if (action === "new-bill") {
       focusBillForm();
     } else if (action === "edit-bill") {
@@ -2113,11 +2173,12 @@
   }
 
   async function handleRootChange(event) {
-    const transfer = event.target.closest('[data-ledger-form="transfer"]');
+    const transfer = event.target.closest('[data-ledger-form="transfer"], [data-ledger-form="calculated-transfer"]');
     if (transfer && event.target.name === "paid") {
       const checked = event.target.checked;
       event.target.disabled = true;
-      if (!await updateTransfer(transfer, checked)) event.target.checked = !checked;
+      const update = transfer.dataset.ledgerForm === "calculated-transfer" ? updateCalculatedTransfer : updateTransfer;
+      if (!await update(transfer, checked)) event.target.checked = !checked;
       event.target.disabled = false;
       return;
     }

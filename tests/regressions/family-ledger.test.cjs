@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 function fixture() {
  const source = fs.readFileSync(path.join(__dirname,'../../ledger.js'),'utf8').replace('  const publicApi = {',`  globalThis.ledgerTest = {
-   calculateStats, expenseList, renderFinancialSummary, settlementView, viewAmount, viewTotal,
+   calculateStats, expenseList, renderFinancialSummary, renderSettlement, settlementView, viewAmount, viewTotal,
    setOrders(flights, costs) { recordedOrders = makeRecordedOrders(flights, costs); familyGroups = ['家庭A','家庭B']; },
    setData(raw) { ledgerData = normalizeData(raw); },
    setFilter(value) { familyFilter = value; },
@@ -92,4 +92,38 @@ test('an unlinked transfer starts blank and never adds an expense', () => {
  assert.equal(view().rows[0].paid, 253);
  assert.equal(view().stats.totalCents, 0);
  assert.equal(view().stats.transfers.length, 0);
+});
+
+test('calculated transfers are checkable without any manual settlement setup', () => {
+ const f = fixture();
+ const raw = data([bill('shared', 65430, {
+   payerId:'c', participantIds:['a','b'], familyScope:'shared',
+   createdAt:'2000-01-01T00:00:00Z', updatedAt:'2000-01-01T00:00:00Z'
+ })]);
+ raw.travelers.push({id:'c', name:'Test C', family:''});
+ f.setData(raw);
+ const view = () => f.settlementView(f.expenseList());
+ const original = JSON.stringify(f.snapshot().bills);
+ const markup = f.renderSettlement(view());
+ assert.equal((markup.match(/type="checkbox"/g) || []).length, 2);
+ assert.match(markup, /Test A → Test C/);
+ assert.match(markup, /Test B → Test C/);
+ assert.doesNotMatch(markup, /金额待确认/);
+
+ raw.settings.settledTransfers = [{id:'transfer-1', fromId:'a', toId:'c', amountCents:32715}];
+ f.setData(raw);
+ assert.equal(view().stats.transfers.length, 1);
+ assert.equal(view().stats.transfers[0].fromId, 'b');
+ assert.equal(view().stats.members[0].netCents, 0);
+ assert.match(f.renderSettlement(view()), /name="paid" checked/);
+
+ raw.settings.settlement = {names:['Test A','Test B','Test C']};
+ f.setData(raw);
+ assert.equal((f.renderSettlement(view()).match(/type="checkbox"/g) || []).length, 2);
+ raw.settings.settledTransfers = [];
+ f.setData(raw);
+ assert.equal(view().rows[0].amount, 32715);
+ assert.equal(view().stats.members[0].netCents, -32715);
+ assert.equal(JSON.stringify(f.snapshot().bills), original);
+ assert.equal(f.viewTotal(f.expenseList()), 65430);
 });
