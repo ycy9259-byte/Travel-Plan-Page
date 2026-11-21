@@ -258,6 +258,11 @@ function flightMissingFieldLabel(field) {
   })[field] || String(field || "待补充信息");
 }
 
+function currentFlightText(value = "") {
+  if (!state.config?.modules?.ledger || !state.data?.ledger?.externalPaidItems?.some((item) => item.paymentStatus === "paid")) return value;
+  return String(value).replace(/（不计当前账单统计）|，均不计当前账单统计/g, "");
+}
+
 function flightPlaceholderCard(journey, index) {
   const missingFields = [...new Set(journey.missingFields || [])].map(flightMissingFieldLabel);
   return `
@@ -267,7 +272,7 @@ function flightPlaceholderCard(journey, index) {
       </div>
       <div class="flight-placeholder">
         <span class="flight-placeholder__eyebrow">资料待补充</span>
-        <h3>${escapeHtml(journey.title || "航班信息待补充")}</h3>
+        <h3>${escapeHtml(currentFlightText(journey.title) || "航班信息待补充")}</h3>
         <p>已按第二轮确认继续生成标准预览；系统没有猜测或伪造缺失的航班事实。</p>
         ${missingFields.length ? `<ul>${missingFields.map((field) => `<li>${escapeHtml(field)}</li>`).join("")}</ul>` : ""}
       </div>
@@ -476,7 +481,7 @@ function dayCard(day) {
       <li class="schedule-item">
         <span class="schedule-time">${escapeHtml(item.time)}</span>
         <div class="schedule-content">
-          <div class="schedule-text">${escapeHtml(item.text)}</div>
+          <div class="schedule-text">${escapeHtml(item.type === "flight" ? currentFlightText(item.text) : item.text)}</div>
           ${scheduleTickets}
           ${mapLinks ? `<div class="schedule-map-links">${mapLinks}</div>` : ""}
         </div>
@@ -1209,7 +1214,14 @@ async function init() {
     if (moduleEnabled("driving")) renderRental();
     if (moduleEnabled("todo")) renderTravelPrep();
     if (moduleEnabled("ledger")) {
-      await window.TravelLedger?.init?.({ tripId: state.data.metadata.tripId, config: state.config, initialTravelers: state.data.ledger?.initialTravelers, familyGroups: state.data.ledger?.familyGroups, budgetSummary: state.data.ledger?.budgetSummary, plannedCosts: state.data.planningCosts?.items, externalPaidItems: state.data.ledger?.externalPaidItems });
+      await window.TravelLedger?.init?.({
+        tripId: state.data.metadata.tripId,
+        config: state.config,
+        initialTravelers: state.data.ledger?.initialTravelers,
+        familyGroups: state.data.ledger?.familyGroups,
+        plannedCosts: state.data.planningCosts?.items,
+        externalPaidItems: state.data.ledger?.externalPaidItems
+      });
     }
     startCountdowns();
   } catch (error) {

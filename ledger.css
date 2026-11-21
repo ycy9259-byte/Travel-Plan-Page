@@ -426,8 +426,26 @@ body[data-active-view="ledger"] .topbar { background: rgba(250, 251, 249, .93); 
 .ledger-family-filters { display:flex; gap:12px; flex-wrap:wrap; }
 .ledger-family-filters button { min-height:44px; min-width:64px; }
 .ledger-family-filters button[aria-pressed="true"] { color:var(--ledger-ink, #17323a); text-decoration:underline; font-weight:700; }
-.ledger-finance-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:14px 0; font-size:12px; }
-.ledger-finance-metrics dd { margin:6px 0; font-size:18px; font-weight:650; }
-.ledger-planning-costs, .ledger-list-section details ul { padding-left:20px; font-size:12px; line-height:1.8; overflow-wrap:anywhere; }
 .ledger-list-section details summary { min-height:44px; cursor:pointer; align-content:center; font-size:13px; }
-@media(max-width:420px) { .ledger-finance-metrics { grid-template-columns:minmax(0,1fr); } }
+.ledger-recorded-summary.ledger-list-section { padding:16px 18px; }
+.ledger-recorded-summary .ledger-list-total { justify-items:start; text-align:left; }
+.ledger-recorded-summary h2 { font-size:0.95rem; }
+.ledger-recorded-summary .ledger-list-total strong { font-size:clamp(1.65rem, 7vw, 2.4rem); }
+.ledger-recorded-summary .ledger-family-filters { margin-top:8px; }
+.ledger-recorded-summary .ledger-family-filters button { font-size:0.875rem; }
+.ledger-reimbursement { grid-template-columns:minmax(0, 1fr) minmax(0, 8rem) auto; }
+.ledger-reimbursement > strong:first-child { overflow-wrap:anywhere; }
+.ledger-reimbursement > small, .ledger-reimbursement > .ledger-form-error { grid-column:1 / -1; }
+.ledger-reimbursement > .ledger-form-error:empty { display:none; }
+.ledger-transfer-check { display:flex; align-items:center; gap:6px; min-height:44px; white-space:nowrap; font-size:0.9rem; }
+.ledger-transfer-check input { width:1.15rem; height:1.15rem; margin:0; }
+.ledger-reimbursement:has([name="paid"]:checked) .ledger-transfer-amount { color:#416959; }
+.ledger-settlement-settings { margin:12px 0; }
+.ledger-settlement-settings summary { padding-block:8px; cursor:pointer; font-size:0.95rem; }
+.ledger-settlement-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+@media(max-width:480px) {
+  .ledger-reimbursement { grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; }
+  .ledger-reimbursement > strong:first-child { grid-column:1 / -1; }
+  .ledger-reimbursement > .ledger-input { max-width:10rem; }
+  .ledger-settlement-fields { grid-template-columns:1fr; }
+}

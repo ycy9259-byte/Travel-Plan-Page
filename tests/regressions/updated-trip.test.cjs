@@ -9,8 +9,11 @@ test('Feb 11 prioritizes the morning C640 and never repeats Songzanlin charges',
 test('purchase viewing schedule is explicit and preserves separate official/package records',()=>{
  const task=trip.preTrip.additionalItems.find(x=>x.id==='purchase-rail-12');assert.equal(task.purchase.planDate,'2027-01-29');assert.equal(task.purchase.planTime,'08:30');assert(task.purchase.note.includes('仅为计划查看时间'));assert(trip.preTrip.additionalItems.some(x=>x.id==='purchase-yunshan-official'));assert(trip.preTrip.additionalItems.some(x=>x.id==='purchase-yunshan-package'));assert.equal(new Set(trip.preTrip.additionalItems.map(x=>x.id)).size,trip.preTrip.additionalItems.length);
 });
-test('two excluded airfare records are kept outside bills and estimates',()=>{
- const paid=trip.ledger.externalPaidItems;assert.equal(paid.length,2);assert.equal(paid.reduce((sum,x)=>sum+x.amountCents,0),388800);assert(paid.every(x=>x.paymentStatus==='paid'&&x.includeInStatistics===false));assert(!trip.planningCosts.items.some(x=>x.id.startsWith('flight-family')));
+test('both recorded airfare payments retain their individual price and family',()=>{
+ const paid=trip.ledger.externalPaidItems;
+ assert.deepEqual(paid.map(x=>[x.familyScope,x.amountCents]),[['家庭A',194400],['家庭B',194400]]);
+ assert(paid.every(x=>x.paymentStatus==='paid'));
+ assert(!trip.planningCosts.items.some(x=>x.id.startsWith('flight-family')));
 });
 test('map uses only known coordinates; return has its own region and prior markers remain',()=>{
  const map=trip.routeMap;assert.equal(map.regions.length,2);const returning=map.regions.find(x=>x.id==='return-rail');assert.deepEqual(returning.routes[0].placeIds,['return-kunming-south','return-yiwu-station','return-wenzhou-north']);assert(!map.regions.some(r=>r.places.some(p=>['baima','cow-horse-coffee','gongbi'].includes(p.id))));const region=map.regions.find(x=>x.id==='yunnan-guizhou');for(const id of ['yulong','yunshanping','blue-moon'])assert(region.dailyLayouts['5'].places.includes(id));assert.equal(trip.days.length,8);assert.equal(trip.accommodations.length,5);
